@@ -14,5 +14,6 @@ module FlashcardApi
     config.api_only = true
     config.time_zone = "UTC"
     config.autoload_lib(ignore: %w[tasks])
+    config.active_job.queue_adapter = :sidekiq
   end
 end
