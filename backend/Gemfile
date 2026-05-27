@@ -6,6 +6,8 @@ gem "puma", ">= 5.0"
 gem "bootsnap", require: false
 gem "rack-cors"
 gem "sidekiq", "~> 7.0"
+gem "bcrypt", "~> 3.1"
+gem "jwt", "~> 2.9"
 
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
