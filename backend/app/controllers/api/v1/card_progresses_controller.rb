@@ -6,61 +6,49 @@ module Api
       before_action :set_flashcard
 
       def show
-        progress = @flashcard.card_progress
-
+        progress = Study::FindCardProgressQuery.call(user: current_user, flashcard: @flashcard)
         return render_error("No progress found", status: :not_found) unless progress
 
-        render_ok(serialize(progress))
+        render_ok(Api::V1::CardProgressSerializer.call(progress))
       end
 
       def create
-        progress = CardProgress.new(
-          card_progress_params.merge(user: current_user, flashcard: @flashcard)
+        result = Study::CreateCardProgressService.call(
+          user:      current_user,
+          flashcard: @flashcard,
+          params:    card_progress_params
         )
 
-        if progress.save
-          render_created(serialize(progress))
+        if result.success?
+          render_created(Api::V1::CardProgressSerializer.call(result.value!))
         else
-          render_error(progress.errors.full_messages.join(", "))
+          render_error(result.failure.join(", "))
         end
       end
 
       def update
-        progress = current_user.card_progresses.find_by(flashcard: @flashcard)
-
+        progress = Study::FindCardProgressQuery.call(user: current_user, flashcard: @flashcard)
         return render_error("No progress found", status: :not_found) unless progress
 
-        if progress.update(card_progress_params)
-          render_ok(serialize(progress))
+        result = Study::UpdateCardProgressService.call(progress: progress, params: card_progress_params)
+
+        if result.success?
+          render_ok(Api::V1::CardProgressSerializer.call(result.value!))
         else
-          render_error(progress.errors.full_messages.join(", "))
+          render_error(result.failure.join(", "))
         end
       end
 
       private
 
       def set_flashcard
-        @flashcard = Flashcard.joins(:deck)
-                               .where(decks: { user_id: current_user.id })
-                               .find(params[:flashcard_id])
+        @flashcard = Flashcards::FindFlashcardQuery.call(user: current_user, id: params[:flashcard_id])
       end
 
       def card_progress_params
         params.require(:card_progress).permit(
           :repetitions, :easiness_factor, :interval_days, :next_review_at
         )
-      end
-
-      def serialize(progress)
-        {
-          id:              progress.id,
-          flashcard_id:    progress.flashcard_id,
-          repetitions:     progress.repetitions,
-          easiness_factor: progress.easiness_factor.to_f,
-          interval_days:   progress.interval_days,
-          next_review_at:  progress.next_review_at,
-          due:             progress.due?
-        }
       end
     end
   end

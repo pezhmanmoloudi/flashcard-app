@@ -6,54 +6,47 @@ module Api
       before_action :set_deck, only: [:show, :update, :destroy]
 
       def index
-        decks = current_user.decks.ordered
-        render_ok(decks.map { |d| serialize(d) })
+        decks = Decks::ListDecksQuery.call(user: current_user)
+        render_ok(Api::V1::DeckSerializer.collection(decks))
       end
 
       def show
-        render_ok(serialize(@deck))
+        render_ok(Api::V1::DeckSerializer.call(@deck))
       end
 
       def create
-        deck = current_user.decks.build(deck_params)
+        result = Decks::CreateDeckService.call(user: current_user, params: deck_params)
 
-        if deck.save
-          render_created(serialize(deck))
+        if result.success?
+          render_created(Api::V1::DeckSerializer.call(result.value!))
         else
-          render_error(deck.errors.full_messages.join(", "))
+          render_error(result.failure.join(", "))
         end
       end
 
       def update
-        if @deck.update(deck_params)
-          render_ok(serialize(@deck))
+        result = Decks::UpdateDeckService.call(deck: @deck, params: deck_params)
+
+        if result.success?
+          render_ok(Api::V1::DeckSerializer.call(result.value!))
         else
-          render_error(@deck.errors.full_messages.join(", "))
+          render_error(result.failure.join(", "))
         end
       end
 
       def destroy
-        @deck.destroy
+        Decks::DestroyDeckService.call(deck: @deck)
         render_no_content
       end
 
       private
 
       def set_deck
-        @deck = current_user.decks.find(params[:id])
+        @deck = Decks::FindDeckQuery.call(user: current_user, id: params[:id])
       end
 
       def deck_params
         params.require(:deck).permit(:name, :description)
-      end
-
-      def serialize(deck)
-        {
-          id: deck.id,
-          name: deck.name,
-          description: deck.description,
-          created_at: deck.created_at
-        }
       end
     end
   end

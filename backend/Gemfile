@@ -8,6 +8,7 @@ gem "rack-cors"
 gem "sidekiq", "~> 7.0"
 gem "bcrypt", "~> 3.1"
 gem "jwt", "~> 2.9"
+gem "dry-monads", "~> 1.6"
 
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

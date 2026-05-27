@@ -1,13 +1,12 @@
 module Api
   module V1
     class BaseController < ApplicationController
-      rescue_from ActiveRecord::RecordNotFound, with: :not_found
-      rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_entity
-      rescue_from ActionController::ParameterMissing, with: :bad_request
+      rescue_from ActiveRecord::RecordNotFound,        with: :not_found
+      rescue_from ActiveRecord::RecordInvalid,         with: :unprocessable_entity
+      rescue_from ActionController::ParameterMissing,  with: :bad_request
+      rescue_from AuthorizationError,                  with: :forbidden
 
       private
-
-      # Response helpers
 
       def render_ok(data)
         render json: data, status: :ok
@@ -25,8 +24,6 @@ module Api
         render json: { error: message }, status: status
       end
 
-      # Error handlers
-
       def not_found
         render json: { error: "Resource not found" }, status: :not_found
       end
@@ -37,6 +34,10 @@ module Api
 
       def bad_request(exception)
         render json: { error: exception.message }, status: :bad_request
+      end
+
+      def forbidden
+        render json: { error: "Not authorized" }, status: :forbidden
       end
     end
   end

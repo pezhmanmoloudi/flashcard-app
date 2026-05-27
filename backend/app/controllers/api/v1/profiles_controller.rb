@@ -4,7 +4,7 @@ module Api
       include Authenticatable
 
       def show
-        render_ok({ user: { id: current_user.id, email: current_user.email } })
+        render_ok(Api::V1::UserSerializer.call(current_user))
       end
     end
   end

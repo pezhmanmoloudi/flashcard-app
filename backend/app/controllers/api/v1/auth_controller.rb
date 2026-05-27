@@ -2,25 +2,25 @@ module Api
   module V1
     class AuthController < BaseController
       def signup
-        result = Auth::RegisterUserService.new(signup_params).call
+        result = Auth::RegisterUserService.call(params: signup_params)
 
-        if result[:success]
-          render_created({ token: result[:token], user: result[:user] })
+        if result.success?
+          render_created(result.value!)
         else
-          render_error(result[:errors].join(", "))
+          render_error(result.failure.join(", "))
         end
       end
 
       def login
-        result = Auth::AuthenticateUserService.new(
-          email: login_params[:email],
+        result = Auth::AuthenticateUserService.call(
+          email:    login_params[:email],
           password: login_params[:password]
-        ).call
+        )
 
-        if result[:success]
-          render_ok({ token: result[:token], user: result[:user] })
+        if result.success?
+          render_ok(result.value!)
         else
-          render_error(result[:errors].join(", "), status: :unauthorized)
+          render_error(result.failure.join(", "), status: :unauthorized)
         end
       end
 
