@@ -7,47 +7,47 @@ module Api
       before_action :set_flashcard, only: [:show, :update, :destroy]
 
       def index
-        render_ok(@deck.flashcards.ordered.map { |f| serialize(f) })
+        flashcards = Flashcards::ListFlashcardsQuery.call(deck: @deck)
+        render_ok(Api::V1::FlashcardSerializer.collection(flashcards))
       end
 
       def show
-        render_ok(serialize(@flashcard))
+        render_ok(Api::V1::FlashcardSerializer.call(@flashcard))
       end
 
       def create
-        flashcard = @deck.flashcards.build(flashcard_params)
+        result = Flashcards::CreateFlashcardService.call(deck: @deck, params: flashcard_params)
 
-        if flashcard.save
-          render_created(serialize(flashcard))
+        if result.success?
+          render_created(Api::V1::FlashcardSerializer.call(result.value!))
         else
-          render_error(flashcard.errors.full_messages.join(", "))
+          render_error(result.failure.join(", "))
         end
       end
 
       def update
-        if @flashcard.update(flashcard_params)
-          render_ok(serialize(@flashcard))
+        result = Flashcards::UpdateFlashcardService.call(flashcard: @flashcard, params: flashcard_params)
+
+        if result.success?
+          render_ok(Api::V1::FlashcardSerializer.call(result.value!))
         else
-          render_error(@flashcard.errors.full_messages.join(", "))
+          render_error(result.failure.join(", "))
         end
       end
 
       def destroy
-        @flashcard.destroy
+        Flashcards::DestroyFlashcardService.call(flashcard: @flashcard)
         render_no_content
       end
 
       private
 
       def set_deck
-        @deck = current_user.decks.find(params[:deck_id])
+        @deck = Decks::FindDeckQuery.call(user: current_user, id: params[:deck_id])
       end
 
       def set_flashcard
-        # Joins through deck to enforce ownership without needing deck_id in URL
-        @flashcard = Flashcard.joins(:deck)
-                               .where(decks: { user_id: current_user.id })
-                               .find(params[:id])
+        @flashcard = Flashcards::FindFlashcardQuery.call(user: current_user, id: params[:id])
       end
 
       def flashcard_params
@@ -56,21 +56,6 @@ module Api
           :source_language, :target_language,
           :example_sentence, :image_url, :audio_url
         )
-      end
-
-      def serialize(flashcard)
-        {
-          id:               flashcard.id,
-          deck_id:          flashcard.deck_id,
-          front_text:       flashcard.front_text,
-          back_text:        flashcard.back_text,
-          source_language:  flashcard.source_language,
-          target_language:  flashcard.target_language,
-          example_sentence: flashcard.example_sentence,
-          image_url:        flashcard.image_url,
-          audio_url:        flashcard.audio_url,
-          created_at:       flashcard.created_at
-        }
       end
     end
   end

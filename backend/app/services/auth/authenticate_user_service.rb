@@ -1,25 +1,16 @@
 module Auth
-  class AuthenticateUserService
+  class AuthenticateUserService < ApplicationService
     def initialize(email:, password:)
-      @email = email&.downcase
+      @email    = email&.downcase
       @password = password
     end
 
     def call
       user = User.find_by(email: @email)
+      return Failure(["Invalid email or password"]) unless user&.authenticate(@password)
 
-      if user&.authenticate(@password)
-        token = JsonWebToken.encode(user_id: user.id)
-        { success: true, token: token, user: serialize(user) }
-      else
-        { success: false, errors: ["Invalid email or password"] }
-      end
-    end
-
-    private
-
-    def serialize(user)
-      { id: user.id, email: user.email }
+      token = JsonWebToken.encode(user_id: user.id)
+      Success({ token: token, user: Api::V1::UserSerializer.call(user) })
     end
   end
 end

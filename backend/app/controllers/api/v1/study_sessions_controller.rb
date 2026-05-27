@@ -7,32 +7,37 @@ module Api
       before_action :set_study_session, only: [:update]
 
       def index
-        sessions = current_user.study_sessions.ordered
-        render_ok(sessions.map { |s| serialize(s) })
+        sessions = Study::ListStudySessionsQuery.call(user: current_user)
+        render_ok(Api::V1::StudySessionSerializer.collection(sessions))
       end
 
       def create
-        session = @deck.study_sessions.build(user: current_user)
+        result = Study::CreateStudySessionService.call(user: current_user, deck: @deck)
 
-        if session.save
-          render_created(serialize(session))
+        if result.success?
+          render_created(Api::V1::StudySessionSerializer.call(result.value!))
         else
-          render_error(session.errors.full_messages.join(", "))
+          render_error(result.failure.join(", "))
         end
       end
 
       def update
-        if @study_session.update(study_session_params)
-          render_ok(serialize(@study_session))
+        result = Study::UpdateStudySessionService.call(
+          study_session: @study_session,
+          params:        study_session_params
+        )
+
+        if result.success?
+          render_ok(Api::V1::StudySessionSerializer.call(result.value!))
         else
-          render_error(@study_session.errors.full_messages.join(", "))
+          render_error(result.failure.join(", "))
         end
       end
 
       private
 
       def set_deck
-        @deck = current_user.decks.find(params[:deck_id])
+        @deck = Decks::FindDeckQuery.call(user: current_user, id: params[:deck_id])
       end
 
       def set_study_session
@@ -41,17 +46,6 @@ module Api
 
       def study_session_params
         params.require(:study_session).permit(:cards_studied, :completed_at)
-      end
-
-      def serialize(session)
-        {
-          id:            session.id,
-          deck_id:       session.deck_id,
-          cards_studied: session.cards_studied,
-          completed:     session.completed?,
-          completed_at:  session.completed_at,
-          created_at:    session.created_at
-        }
       end
     end
   end

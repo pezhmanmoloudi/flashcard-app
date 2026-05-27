@@ -14,7 +14,7 @@ RSpec.describe "GET /api/v1/profile", type: :request do
       get "/api/v1/profile", headers: auth_headers(token)
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["user"]["email"]).to eq(user.email)
+      expect(response.parsed_body["email"]).to eq(user.email)
     end
   end
 
