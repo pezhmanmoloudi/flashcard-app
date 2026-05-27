@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       post "auth/signup",  to: "auth#signup"
       post "auth/login",   to: "auth#login"
       get  "profile",      to: "profiles#show"
+      resources :decks
     end
   end
 end
