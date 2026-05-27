@@ -12,7 +12,9 @@ Rails.application.routes.draw do
       post "auth/signup",  to: "auth#signup"
       post "auth/login",   to: "auth#login"
       get  "profile",      to: "profiles#show"
-      resources :decks
+      resources :decks do
+        resources :flashcards, shallow: true
+      end
     end
   end
 end

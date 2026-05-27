@@ -1,5 +1,6 @@
 class Deck < ApplicationRecord
   belongs_to :user
+  has_many :flashcards, dependent: :destroy
 
   validates :name, presence: true, length: { maximum: 100 }
   validates :description, length: { maximum: 500 }, allow_blank: true
