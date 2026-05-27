@@ -1,27 +1,36 @@
 import type { RouteRecordRaw } from 'vue-router'
+import { ROUTE_NAMES } from '../route-names'
+import { authRoutes } from './auth.routes'
+import { deckRoutes } from './decks.routes'
+import { studyRoutes } from './study.routes'
+import { quizRoutes } from './quizzes.routes'
+import { settingsRoutes } from './settings.routes'
 
 export const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    name: 'home',
-    component: () => import('@/pages/HomePage.vue'),
+    component: () => import('@/layouts/AppLayout.vue'),
     meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        redirect: { name: ROUTE_NAMES.DECKS },
+      },
+      ...deckRoutes,
+      ...studyRoutes,
+      ...quizRoutes,
+      ...settingsRoutes,
+    ],
   },
   {
-    path: '/login',
-    name: 'login',
-    component: () => import('@/pages/auth/LoginPage.vue'),
+    path: '/auth',
+    component: () => import('@/layouts/AuthLayout.vue'),
     meta: { requiresGuest: true },
-  },
-  {
-    path: '/register',
-    name: 'register',
-    component: () => import('@/pages/auth/RegisterPage.vue'),
-    meta: { requiresGuest: true },
+    children: authRoutes,
   },
   {
     path: '/:pathMatch(.*)*',
-    name: 'not-found',
+    name: ROUTE_NAMES.NOT_FOUND,
     component: () => import('@/pages/NotFoundPage.vue'),
   },
 ]
