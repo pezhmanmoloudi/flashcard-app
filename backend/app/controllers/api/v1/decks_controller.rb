@@ -2,12 +2,13 @@ module Api
   module V1
     class DecksController < BaseController
       include Authenticatable
+      include Paginatable
 
       before_action :set_deck, only: [:show, :update, :destroy]
 
       def index
-        decks = Decks::ListDecksQuery.call(user: current_user)
-        render_ok(Api::V1::DeckSerializer.collection(decks))
+        pagy, decks = paginate(Decks::ListDecksQuery.call(user: current_user))
+        render_collection(Api::V1::DeckSerializer.collection(decks), pagy)
       end
 
       def show

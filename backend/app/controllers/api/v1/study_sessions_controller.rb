@@ -2,13 +2,14 @@ module Api
   module V1
     class StudySessionsController < BaseController
       include Authenticatable
+      include Paginatable
 
       before_action :set_deck,          only: [:create]
       before_action :set_study_session, only: [:update]
 
       def index
-        sessions = Study::ListStudySessionsQuery.call(user: current_user)
-        render_ok(Api::V1::StudySessionSerializer.collection(sessions))
+        pagy, sessions = paginate(Study::ListStudySessionsQuery.call(user: current_user))
+        render_collection(Api::V1::StudySessionSerializer.collection(sessions), pagy)
       end
 
       def create

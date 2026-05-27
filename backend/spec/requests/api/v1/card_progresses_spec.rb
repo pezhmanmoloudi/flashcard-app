@@ -14,8 +14,8 @@ RSpec.describe "CardProgresses", type: :request do
            headers: headers, as: :json
 
       expect(response).to have_http_status(:created)
-      expect(response.parsed_body["flashcard_id"]).to eq(flashcard.id)
-      expect(response.parsed_body["easiness_factor"]).to eq(2.5)
+      expect(response.parsed_body["data"]["flashcard_id"]).to eq(flashcard.id)
+      expect(response.parsed_body["data"]["easiness_factor"]).to eq(2.5)
     end
 
     it "returns error for duplicate progress" do
@@ -46,8 +46,8 @@ RSpec.describe "CardProgresses", type: :request do
       get "/api/v1/flashcards/#{flashcard.id}/progress", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["repetitions"]).to eq(3)
-      expect(response.parsed_body).to include("due")
+      expect(response.parsed_body["data"]["repetitions"]).to eq(3)
+      expect(response.parsed_body["data"]).to include("due")
     end
 
     it "returns not found when no progress exists" do
@@ -68,8 +68,8 @@ RSpec.describe "CardProgresses", type: :request do
             headers: headers, as: :json
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["repetitions"]).to eq(1)
-      expect(response.parsed_body["interval_days"]).to eq(3)
+      expect(response.parsed_body["data"]["repetitions"]).to eq(1)
+      expect(response.parsed_body["data"]["interval_days"]).to eq(3)
     end
   end
 end

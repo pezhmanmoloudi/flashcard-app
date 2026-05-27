@@ -10,10 +10,10 @@ RSpec.describe "Flashcards", type: :request do
   let(:valid_params) do
     {
       flashcard: {
-        front_text:      "das Haus",
-        back_text:       "the house",
-        source_language: "german",
-        target_language: "english",
+        front_text:       "das Haus",
+        back_text:        "the house",
+        source_language:  "german",
+        target_language:  "english",
         example_sentence: "Das Haus ist groß."
       }
     }
@@ -26,7 +26,15 @@ RSpec.describe "Flashcards", type: :request do
       get "/api/v1/decks/#{deck.id}/flashcards", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.length).to eq(3)
+      expect(response.parsed_body["data"].length).to eq(3)
+    end
+
+    it "includes pagination meta" do
+      get "/api/v1/decks/#{deck.id}/flashcards", headers: headers
+
+      meta = response.parsed_body["meta"]
+      expect(meta["current_page"]).to eq(1)
+      expect(meta["total_count"]).to eq(3)
     end
 
     it "returns not found for another user's deck" do
@@ -51,7 +59,7 @@ RSpec.describe "Flashcards", type: :request do
       get "/api/v1/flashcards/#{flashcard.id}", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["front_text"]).to eq(flashcard.front_text)
+      expect(response.parsed_body["data"]["front_text"]).to eq(flashcard.front_text)
     end
 
     it "returns not found for another user's flashcard" do
@@ -70,8 +78,8 @@ RSpec.describe "Flashcards", type: :request do
              params: valid_params, headers: headers, as: :json
 
         expect(response).to have_http_status(:created)
-        expect(response.parsed_body["front_text"]).to eq("das Haus")
-        expect(response.parsed_body["source_language"]).to eq("german")
+        expect(response.parsed_body["data"]["front_text"]).to eq("das Haus")
+        expect(response.parsed_body["data"]["source_language"]).to eq("german")
       end
     end
 
@@ -117,7 +125,7 @@ RSpec.describe "Flashcards", type: :request do
             headers: headers, as: :json
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["front_text"]).to eq("der Hund")
+      expect(response.parsed_body["data"]["front_text"]).to eq("der Hund")
     end
 
     it "returns not found for another user's flashcard" do

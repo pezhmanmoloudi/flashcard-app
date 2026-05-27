@@ -11,8 +11,8 @@ RSpec.describe "Auth", type: :request do
         post "/api/v1/auth/signup", params: valid_params, as: :json
 
         expect(response).to have_http_status(:created)
-        expect(response.parsed_body).to include("token", "user")
-        expect(response.parsed_body["user"]["email"]).to eq("new@example.com")
+        expect(response.parsed_body["data"]).to include("token", "user")
+        expect(response.parsed_body["data"]["user"]["email"]).to eq("new@example.com")
       end
     end
 
@@ -49,8 +49,8 @@ RSpec.describe "Auth", type: :request do
              as: :json
 
         expect(response).to have_http_status(:ok)
-        expect(response.parsed_body).to include("token", "user")
-        expect(response.parsed_body["user"]["email"]).to eq("test@example.com")
+        expect(response.parsed_body["data"]).to include("token", "user")
+        expect(response.parsed_body["data"]["user"]["email"]).to eq("test@example.com")
       end
     end
 
