@@ -2,13 +2,14 @@ module Api
   module V1
     class FlashcardsController < BaseController
       include Authenticatable
+      include Paginatable
 
       before_action :set_deck,      only: [:index, :create]
       before_action :set_flashcard, only: [:show, :update, :destroy]
 
       def index
-        flashcards = Flashcards::ListFlashcardsQuery.call(deck: @deck)
-        render_ok(Api::V1::FlashcardSerializer.collection(flashcards))
+        pagy, flashcards = paginate(Flashcards::ListFlashcardsQuery.call(deck: @deck))
+        render_collection(Api::V1::FlashcardSerializer.collection(flashcards), pagy)
       end
 
       def show

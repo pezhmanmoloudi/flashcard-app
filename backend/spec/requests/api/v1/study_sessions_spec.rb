@@ -11,9 +11,9 @@ RSpec.describe "StudySessions", type: :request do
       post "/api/v1/decks/#{deck.id}/study_sessions", headers: headers
 
       expect(response).to have_http_status(:created)
-      expect(response.parsed_body["deck_id"]).to eq(deck.id)
-      expect(response.parsed_body["completed"]).to be(false)
-      expect(response.parsed_body["cards_studied"]).to eq(0)
+      expect(response.parsed_body["data"]["deck_id"]).to eq(deck.id)
+      expect(response.parsed_body["data"]["completed"]).to be(false)
+      expect(response.parsed_body["data"]["cards_studied"]).to eq(0)
     end
 
     it "returns not found for another user's deck" do
@@ -38,7 +38,15 @@ RSpec.describe "StudySessions", type: :request do
       get "/api/v1/study_sessions", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.length).to eq(3)
+      expect(response.parsed_body["data"].length).to eq(3)
+    end
+
+    it "includes pagination meta" do
+      get "/api/v1/study_sessions", headers: headers
+
+      meta = response.parsed_body["meta"]
+      expect(meta["current_page"]).to eq(1)
+      expect(meta["total_count"]).to eq(3)
     end
 
     it "does not return other users' sessions" do
@@ -46,7 +54,7 @@ RSpec.describe "StudySessions", type: :request do
 
       get "/api/v1/study_sessions", headers: headers
 
-      expect(response.parsed_body.length).to eq(3)
+      expect(response.parsed_body["data"].length).to eq(3)
     end
   end
 
@@ -61,8 +69,8 @@ RSpec.describe "StudySessions", type: :request do
             headers: headers, as: :json
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["cards_studied"]).to eq(10)
-      expect(response.parsed_body["completed"]).to be(true)
+      expect(response.parsed_body["data"]["cards_studied"]).to eq(10)
+      expect(response.parsed_body["data"]["completed"]).to be(true)
     end
 
     it "returns not found for another user's session" do

@@ -1,9 +1,9 @@
 require "rails_helper"
 
 RSpec.describe "Decks", type: :request do
-  let(:user)  { create(:user) }
-  let(:other) { create(:user) }
-  let(:token) { JsonWebToken.encode(user_id: user.id) }
+  let(:user)    { create(:user) }
+  let(:other)   { create(:user) }
+  let(:token)   { JsonWebToken.encode(user_id: user.id) }
   let(:headers) { { "Authorization" => "Bearer #{token}" } }
 
   describe "GET /api/v1/decks" do
@@ -13,7 +13,16 @@ RSpec.describe "Decks", type: :request do
       get "/api/v1/decks", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.length).to eq(3)
+      expect(response.parsed_body["data"].length).to eq(3)
+    end
+
+    it "includes pagination meta" do
+      get "/api/v1/decks", headers: headers
+
+      meta = response.parsed_body["meta"]
+      expect(meta["current_page"]).to eq(1)
+      expect(meta["total_count"]).to eq(3)
+      expect(meta["per_page"]).to eq(25)
     end
 
     it "returns unauthorized without a token" do
@@ -30,7 +39,7 @@ RSpec.describe "Decks", type: :request do
       get "/api/v1/decks/#{deck.id}", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["name"]).to eq(deck.name)
+      expect(response.parsed_body["data"]["name"]).to eq(deck.name)
     end
 
     it "returns not found for another user's deck" do
@@ -50,7 +59,7 @@ RSpec.describe "Decks", type: :request do
              headers: headers, as: :json
 
         expect(response).to have_http_status(:created)
-        expect(response.parsed_body["name"]).to eq("German Basics")
+        expect(response.parsed_body["data"]["name"]).to eq("German Basics")
       end
     end
 
@@ -75,7 +84,7 @@ RSpec.describe "Decks", type: :request do
             headers: headers, as: :json
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["name"]).to eq("Updated Name")
+      expect(response.parsed_body["data"]["name"]).to eq("Updated Name")
     end
 
     it "returns not found for another user's deck" do

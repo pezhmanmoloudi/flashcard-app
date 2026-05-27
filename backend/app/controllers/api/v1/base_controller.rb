@@ -9,11 +9,11 @@ module Api
       private
 
       def render_ok(data)
-        render json: data, status: :ok
+        render json: { data: data }, status: :ok
       end
 
       def render_created(data)
-        render json: data, status: :created
+        render json: { data: data }, status: :created
       end
 
       def render_no_content
