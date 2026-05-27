@@ -13,7 +13,14 @@ Rails.application.routes.draw do
       post "auth/login",   to: "auth#login"
       get  "profile",      to: "profiles#show"
       resources :decks do
-        resources :flashcards, shallow: true
+        resources :flashcards,     shallow: true
+        resources :study_sessions, only: [:create]
+      end
+
+      resources :study_sessions, only: [:index, :update]
+
+      resources :flashcards, only: [] do
+        resource :progress, only: [:show, :create, :update], controller: "card_progresses"
       end
     end
   end
