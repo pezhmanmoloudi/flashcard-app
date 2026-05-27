@@ -1,5 +1,6 @@
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 import { useAuthStore } from '@/core/stores/auth.store'
+import { ROUTE_NAMES } from '../route-names'
 
 export function authGuard(
   to: RouteLocationNormalized,
@@ -7,14 +8,16 @@ export function authGuard(
   next: NavigationGuardNext,
 ) {
   const authStore = useAuthStore()
+  const requiresAuth = to.matched.some((r) => r.meta.requiresAuth)
+  const requiresGuest = to.matched.some((r) => r.meta.requiresGuest)
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ name: 'login', query: { redirect: to.fullPath } })
+  if (requiresAuth && !authStore.isAuthenticated) {
+    next({ name: ROUTE_NAMES.AUTH_LOGIN, query: { redirect: to.fullPath } })
     return
   }
 
-  if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next({ name: 'home' })
+  if (requiresGuest && authStore.isAuthenticated) {
+    next({ name: ROUTE_NAMES.DECKS })
     return
   }
 
