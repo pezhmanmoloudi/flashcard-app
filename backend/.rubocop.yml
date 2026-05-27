@@ -1,8 +1,87 @@
-# Omakase Ruby styling for Rails
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+# To see the default values you can check this file:
+# https://github.com/rubocop-hq/rubocop/blob/master/config/default.yml
 
-# Overwrite or add rules to create your own house style
-#
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+require:
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 3.3
+  NewCops: enable
+  Include:
+    - "app/**/*"
+    - "config/routes.rb"
+    - "lib/tasks/**/*"
+  Exclude:
+    - "spec/api_doc/v1/schemas/**/*"
+    - "spec/api_doc/v1/descriptions/**/*"
+    - "app/views/**/*"
+    - "bin/*"
+    - 'tmp/**/*'
+    - 'log/**/*'
+    - 'storage/**/*'
+    - '**/.DS_Store'
+    - 'db/schema.rb'
+
+Metrics/BlockLength:
+  Max: 40
+  Exclude:
+    - "lib/tasks/**/*"
+    - "spec/**/*"
+    - "config/routes.rb"
+    - "config/environments/*.rb"
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    "%i": "()"
+    "%w": "()"
+
+Style/Documentation:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 200
+
+Layout/AccessModifierIndentation:
+  EnforcedStyle: outdent
+
+Rails/LexicallyScopedActionFilter:
+  Enabled: false
+
+Rails/DynamicFindBy:
+  Whitelist: ['find_by_invitation_token']
+
+Metrics/MethodLength:
+  CountAsOne: ['array', 'heredoc', 'hash']
+
+Rails/ApplicationController:
+  Enabled: false
+
+Rails/DeprecatedActiveModelErrorsMethods:
+  Enabled: false
+
+Rails/UnknownEnv:
+  Environments:
+    - development
+    - test
+    - integration
+    - staging
+    - production
+
+####### RSpec #####
+RSpec/MultipleMemoizedHelpers:
+  Max: 7
+
+RSpec/NestedGroups:
+  Max: 5
+
+RSpec/LetSetup:
+  Enabled: false
+
+RSpec/SpecFilePathFormat:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Max: 5
+  CountAsOne: ['array', 'heredoc']
