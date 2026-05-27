@@ -50,7 +50,7 @@ Rails/LexicallyScopedActionFilter:
   Enabled: false
 
 Rails/DynamicFindBy:
-  Whitelist: ['find_by_invitation_token']
+  AllowedMethods: ['find_by_invitation_token']
 
 Metrics/MethodLength:
   CountAsOne: ['array', 'heredoc', 'hash']

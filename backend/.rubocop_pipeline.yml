@@ -1,0 +1,71 @@
+# To see the default values you can check this file:
+# https://github.com/rubocop-hq/rubocop/blob/master/config/default.yml
+inherit_from: ./.rubocop.yml
+
+inherit_mode:
+  merge:
+    - Exclude
+
+AllCops:
+  Exclude:
+    - "spec/**/*"
+
+Layout/LineLength:
+  Enabled: false
+
+Layout/AccessModifierIndentation:
+  Enabled: false
+
+Rails/LexicallyScopedActionFilter:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Max: 10
+
+Rails/SkipsModelValidations:
+  Enabled: false
+
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
+
+Style/OptionalBooleanParameter:
+  Enabled: false
+
+Rails/InverseOf:
+  Enabled: false
+
+Rails/HasManyOrHasOneDependent:
+  Enabled: false
+
+Naming/VariableNumber:
+  Enabled: false
+
+Rails/UniqueValidationWithoutIndex:
+  Enabled: false
+
+Rails/RenderInline:
+  Enabled: false
+
+Rails/TransactionExitStatement:
+  Enabled: false
+
+Style/CaseEquality:
+  Enabled: false
+
+Style/SafeNavigationChainLength:
+  Max: 4
