@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       get  "health",       to: "health#show"
       post "auth/signup",  to: "auth#signup"
       post "auth/login",   to: "auth#login"
+      get  "profile",      to: "profiles#show"
     end
   end
 end
