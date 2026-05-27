@@ -2,6 +2,7 @@ class Flashcard < ApplicationRecord
   SUPPORTED_LANGUAGES = %w[german english persian].freeze
 
   belongs_to :deck
+  has_one :card_progress, dependent: :destroy
 
   validates :front_text,      presence: true
   validates :back_text,       presence: true

@@ -10,9 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_27_203640) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_27_205103) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "card_progresses", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "flashcard_id", null: false
+    t.integer "repetitions", default: 0, null: false
+    t.decimal "easiness_factor", precision: 4, scale: 2, default: "2.5", null: false
+    t.integer "interval_days", default: 0, null: false
+    t.datetime "next_review_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["flashcard_id"], name: "index_card_progresses_on_flashcard_id"
+    t.index ["user_id", "flashcard_id"], name: "index_card_progresses_on_user_id_and_flashcard_id", unique: true
+    t.index ["user_id"], name: "index_card_progresses_on_user_id"
+  end
 
   create_table "decks", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -37,6 +51,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_27_203640) do
     t.index ["deck_id"], name: "index_flashcards_on_deck_id"
   end
 
+  create_table "study_sessions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "deck_id", null: false
+    t.integer "cards_studied", default: 0, null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deck_id"], name: "index_study_sessions_on_deck_id"
+    t.index ["user_id"], name: "index_study_sessions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", null: false
     t.string "password_digest", null: false
@@ -45,6 +70,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_27_203640) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "card_progresses", "flashcards"
+  add_foreign_key "card_progresses", "users"
   add_foreign_key "decks", "users"
   add_foreign_key "flashcards", "decks"
+  add_foreign_key "study_sessions", "decks"
+  add_foreign_key "study_sessions", "users"
 end

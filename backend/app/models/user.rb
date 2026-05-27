@@ -1,7 +1,9 @@
 class User < ApplicationRecord
   has_secure_password
 
-  has_many :decks, dependent: :destroy
+  has_many :decks,          dependent: :destroy
+  has_many :study_sessions, dependent: :destroy
+  has_many :card_progresses, dependent: :destroy
 
   validates :email, presence: true,
                     uniqueness: { case_sensitive: false },
