@@ -19,7 +19,7 @@ function isActive(routeName: string) {
 }
 
 function logout() {
-  authStore.clearAuth()
+  authStore.logout()
   router.push({ name: ROUTE_NAMES.AUTH_LOGIN })
 }
 </script>
