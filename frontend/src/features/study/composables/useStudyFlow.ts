@@ -7,7 +7,6 @@ import type { StudySession, StudyRating } from '../types'
 export function useStudyFlow() {
   const cards = ref<Flashcard[]>([])
   const currentIndex = ref(0)
-  const isFlipped = ref(false)
   const session = ref<StudySession | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -23,7 +22,6 @@ export function useStudyFlow() {
     completed.value = false
     cardsStudied.value = 0
     currentIndex.value = 0
-    isFlipped.value = false
     cards.value = []
 
     try {
@@ -47,15 +45,9 @@ export function useStudyFlow() {
     }
   }
 
-  function flipCard() {
-    if (!isFlipped.value) {
-      isFlipped.value = true
-    }
-  }
-
   async function rateCard(rating: StudyRating) {
     const card = currentCard.value
-    if (!card || !isFlipped.value) return
+    if (!card) return
 
     try {
       await studyService.reviewCard(card.id, rating)
@@ -67,7 +59,6 @@ export function useStudyFlow() {
 
     if (currentIndex.value < cards.value.length - 1) {
       currentIndex.value++
-      isFlipped.value = false
     } else {
       if (session.value) {
         await studyService
@@ -86,13 +77,11 @@ export function useStudyFlow() {
     currentCard,
     currentIndex,
     total,
-    isFlipped,
     loading,
     error,
     completed,
     cardsStudied,
     startStudy,
-    flipCard,
     rateCard,
   }
 }

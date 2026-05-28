@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/core/router/route-names'
 import { BaseSpinner, BaseAlert } from '@/shared/components/ui'
 import { useStudyFlow } from '@/features/study/composables/useStudyFlow'
-import StudyFlashcard from '@/features/study/components/StudyFlashcard.vue'
-import StudyRatingButtons from '@/features/study/components/StudyRatingButtons.vue'
+import { useCardFlip } from '@/features/study/composables/useCardFlip'
+import StudyCard from '@/features/study/components/StudyCard.vue'
 import StudyProgress from '@/features/study/components/StudyProgress.vue'
 import StudyComplete from '@/features/study/components/StudyComplete.vue'
-import type { StudyRating } from '@/features/study/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,31 +17,28 @@ const {
   currentCard,
   currentIndex,
   total,
-  isFlipped,
   loading,
   error,
   completed,
   cardsStudied,
   startStudy,
-  flipCard,
   rateCard,
 } = useStudyFlow()
 
-const ratingKeys: Record<string, StudyRating> = {
-  '1': 'again',
-  '2': 'hard',
-  '3': 'good',
-  '4': 'easy',
-}
+const { isFlipped, flip, reset: resetFlip } = useCardFlip()
+
+// Reset flip state when the session advances to the next card
+watch(currentIndex, () => resetFlip())
 
 function handleKeydown(e: KeyboardEvent) {
+  if (!currentCard.value) return
   if (e.key === ' ' || e.key === 'Enter') {
     e.preventDefault()
-    if (!isFlipped.value && currentCard.value) flipCard()
-    return
-  }
-  if (isFlipped.value && ratingKeys[e.key]) {
-    rateCard(ratingKeys[e.key])
+    flip()
+  } else if (e.key === 'ArrowRight') {
+    rateCard('easy')
+  } else if (e.key === 'ArrowLeft') {
+    rateCard('again')
   }
 }
 
@@ -57,7 +53,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 max-w-lg mx-auto">
+  <div class="flex flex-col max-w-sm mx-auto gap-4">
     <div class="flex items-center justify-between">
       <button
         class="text-sm text-gray-400 hover:text-gray-700 transition-colors"
@@ -65,17 +61,11 @@ onUnmounted(() => {
       >
         ← Back
       </button>
-      <span
-        v-if="!loading && !completed && total > 0"
-        class="text-xs text-gray-400"
-      >
-        {{ currentIndex + 1 }} / {{ total }}
-      </span>
     </div>
 
     <div
       v-if="loading"
-      class="flex justify-center py-16"
+      class="flex justify-center py-20"
     >
       <BaseSpinner size="lg" />
     </div>
@@ -99,40 +89,13 @@ onUnmounted(() => {
         :total="total"
       />
 
-      <StudyFlashcard
+      <StudyCard
         :flashcard="currentCard"
-        :flipped="isFlipped"
-        @flip="flipCard"
+        :is-flipped="isFlipped"
+        @flip="flip"
+        @swipe-right="rateCard('easy')"
+        @swipe-left="rateCard('again')"
       />
-
-      <Transition name="fade">
-        <StudyRatingButtons
-          v-if="isFlipped"
-          @rate="rateCard"
-        />
-      </Transition>
-
-      <Transition name="fade">
-        <p
-          v-if="!isFlipped"
-          class="text-center text-xs text-gray-400"
-        >
-          Press
-          <kbd class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-mono text-[10px]">Space</kbd>
-          or tap the card to reveal
-        </p>
-      </Transition>
     </template>
   </div>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
