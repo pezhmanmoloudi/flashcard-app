@@ -19,6 +19,8 @@ export interface Flashcard {
   source_language: string
   target_language: string
   example_sentence?: string
+  translated_sentence?: string
+  grammar_notes?: string
   image_url?: string
   audio_url?: string
   created_at: string
@@ -30,4 +32,6 @@ export interface FlashcardParams {
   source_language: string
   target_language: string
   example_sentence?: string
+  translated_sentence?: string
+  grammar_notes?: string
 }

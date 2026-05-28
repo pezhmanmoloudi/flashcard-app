@@ -126,26 +126,70 @@ const flipStyle = computed(() => ({
 
         <!-- ── Back face ── -->
         <div class="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden rounded-2xl bg-white shadow-md">
-          <div class="flex-1 flex flex-col items-center justify-center gap-4 px-6 py-8">
-            <!-- Translation — also tappable to replay pronunciation -->
+
+          <!-- TOP: translation — most prominent element -->
+          <div class="flex flex-col items-center justify-center text-center px-6 pt-8 pb-5">
             <WordAudio
               :text="flashcard.back_text"
               :audio-src="flashcard.audio_url"
-              class="text-3xl font-bold text-[var(--color-primary)] text-center leading-tight"
+              class="text-3xl font-bold text-[var(--color-primary)] leading-tight"
             />
-            <p class="text-[11px] text-gray-400 uppercase tracking-widest">
+            <p class="mt-1.5 text-[11px] text-gray-400 uppercase tracking-widest">
               {{ flashcard.target_language }}
             </p>
+          </div>
 
+          <!-- MIDDLE: original word for reference -->
+          <div class="flex flex-col items-center text-center px-6 py-4 border-t border-gray-100">
+            <p class="text-base font-medium text-gray-500">
+              {{ flashcard.front_text }}
+            </p>
+            <p class="mt-0.5 text-[10px] text-gray-300 uppercase tracking-widest">
+              {{ flashcard.source_language }}
+            </p>
+          </div>
+
+          <!-- BOTTOM: learning context — example, sentence translation, grammar -->
+          <div
+            v-if="flashcard.example_sentence || flashcard.grammar_notes"
+            class="flex-1 px-5 pb-5 pt-2 space-y-2 overflow-y-auto"
+          >
             <div
               v-if="flashcard.example_sentence"
-              class="mt-2 w-full px-4 py-3 bg-gray-50 rounded-xl"
+              class="rounded-xl bg-gray-50 px-4 py-3 space-y-1.5"
             >
-              <p class="text-sm text-gray-500 italic text-center leading-relaxed">
+              <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                Example
+              </p>
+              <p class="text-sm text-gray-500 italic leading-relaxed">
                 "{{ flashcard.example_sentence }}"
+              </p>
+              <p
+                v-if="flashcard.translated_sentence"
+                class="text-sm text-gray-700 leading-relaxed"
+              >
+                {{ flashcard.translated_sentence }}
+              </p>
+            </div>
+
+            <div
+              v-if="flashcard.grammar_notes"
+              class="rounded-xl bg-indigo-50 px-4 py-3"
+            >
+              <p class="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">
+                Grammar
+              </p>
+              <p class="text-sm text-indigo-700 leading-relaxed">
+                {{ flashcard.grammar_notes }}
               </p>
             </div>
           </div>
+
+          <!-- Spacer when there is no learning-context content -->
+          <div
+            v-else
+            class="flex-1"
+          />
         </div>
       </div>
     </div>

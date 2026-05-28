@@ -34,6 +34,8 @@ const backText = ref(initialValues?.back_text ?? '')
 const sourceLanguage = ref(initialValues?.source_language ?? '')
 const targetLanguage = ref(initialValues?.target_language ?? '')
 const exampleSentence = ref(initialValues?.example_sentence ?? '')
+const translatedSentence = ref(initialValues?.translated_sentence ?? '')
+const grammarNotes = ref(initialValues?.grammar_notes ?? '')
 
 const frontTextError = ref<string | null>(null)
 const backTextError = ref<string | null>(null)
@@ -49,6 +51,8 @@ watch(
       sourceLanguage.value = val.source_language
       targetLanguage.value = val.target_language
       exampleSentence.value = val.example_sentence ?? ''
+      translatedSentence.value = val.translated_sentence ?? ''
+      grammarNotes.value = val.grammar_notes ?? ''
     }
   },
 )
@@ -83,11 +87,13 @@ function validate(): boolean {
 function handleSubmit() {
   if (!validate()) return
   emit('submit', {
-    front_text: frontText.value.trim(),
-    back_text: backText.value.trim(),
-    source_language: sourceLanguage.value,
-    target_language: targetLanguage.value,
-    example_sentence: exampleSentence.value.trim() || undefined,
+    front_text:          frontText.value.trim(),
+    back_text:           backText.value.trim(),
+    source_language:     sourceLanguage.value,
+    target_language:     targetLanguage.value,
+    example_sentence:    exampleSentence.value.trim() || undefined,
+    translated_sentence: translatedSentence.value.trim() || undefined,
+    grammar_notes:       grammarNotes.value.trim() || undefined,
   })
 }
 </script>
@@ -148,6 +154,24 @@ function handleSubmit() {
       v-model="exampleSentence"
       label="Example sentence"
       placeholder="Optional — add a sentence using this word in context."
+      :rows="2"
+      :disabled="loading"
+      hint="Optional."
+    />
+
+    <BaseTextarea
+      v-model="translatedSentence"
+      label="Sentence translation"
+      placeholder="Optional — translation of the example sentence."
+      :rows="2"
+      :disabled="loading"
+      hint="Optional."
+    />
+
+    <BaseTextarea
+      v-model="grammarNotes"
+      label="Grammar notes"
+      placeholder="Optional — grammatical gender, case, verb form, usage notes…"
       :rows="2"
       :disabled="loading"
       hint="Optional."
