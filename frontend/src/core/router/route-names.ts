@@ -15,6 +15,7 @@ export const ROUTE_NAMES = {
 
   // Study
   STUDY: 'study',
+  STUDY_SESSION: 'study.session',
 
   // Quizzes
   QUIZZES: 'quizzes',
