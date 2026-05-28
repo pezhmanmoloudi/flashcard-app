@@ -39,4 +39,36 @@ export const flashcardService = {
   async destroy(id: number): Promise<void> {
     await apiClient.delete(`/flashcards/${id}`)
   },
+
+  async uploadImage(id: number, file: File): Promise<Flashcard> {
+    const form = new FormData()
+    form.append('flashcard[image]', file)
+    const { data } = await apiClient.post<ApiResponse<Flashcard>>(
+      `/flashcards/${id}/upload_image`,
+      form,
+      { headers: { 'Content-Type': undefined } },
+    )
+    return data.data
+  },
+
+  async uploadAudio(id: number, file: File): Promise<Flashcard> {
+    const form = new FormData()
+    form.append('flashcard[audio]', file)
+    const { data } = await apiClient.post<ApiResponse<Flashcard>>(
+      `/flashcards/${id}/upload_audio`,
+      form,
+      { headers: { 'Content-Type': undefined } },
+    )
+    return data.data
+  },
+
+  async removeImage(id: number): Promise<Flashcard> {
+    const { data } = await apiClient.delete<ApiResponse<Flashcard>>(`/flashcards/${id}/image`)
+    return data.data
+  },
+
+  async removeAudio(id: number): Promise<Flashcard> {
+    const { data } = await apiClient.delete<ApiResponse<Flashcard>>(`/flashcards/${id}/audio`)
+    return data.data
+  },
 }
