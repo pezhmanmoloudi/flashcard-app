@@ -39,5 +39,17 @@ export function useFlashcards() {
     }
   }
 
-  return { flashcards, meta, loading, error, fetchFlashcards, createFlashcard }
+  async function destroyFlashcard(id: number): Promise<boolean> {
+    error.value = null
+    try {
+      await flashcardService.destroy(id)
+      flashcards.value = flashcards.value.filter((f) => f.id !== id)
+      return true
+    } catch (e) {
+      error.value = extractError(e)
+      return false
+    }
+  }
+
+  return { flashcards, meta, loading, error, fetchFlashcards, createFlashcard, destroyFlashcard }
 }

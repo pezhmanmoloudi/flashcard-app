@@ -2,6 +2,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import { ROUTE_NAMES } from '../route-names'
 import { authRoutes } from './auth.routes'
 import { deckRoutes } from './decks.routes'
+import { flashcardRoutes } from './flashcards.routes'
 import { studyRoutes } from './study.routes'
 import { quizRoutes } from './quizzes.routes'
 import { settingsRoutes } from './settings.routes'
@@ -17,6 +18,7 @@ export const routes: RouteRecordRaw[] = [
         redirect: { name: ROUTE_NAMES.DECKS },
       },
       ...deckRoutes,
+      ...flashcardRoutes,
       ...studyRoutes,
       ...quizRoutes,
       ...settingsRoutes,

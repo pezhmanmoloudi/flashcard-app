@@ -5,12 +5,12 @@ import { ROUTE_NAMES } from '@/core/router/route-names'
 import {
   BasePageHeader,
   BaseButton,
-  BaseEmptyState,
   BaseSpinner,
   BaseAlert,
   BaseCard,
 } from '@/shared/components/ui'
 import { useDeck } from '@/features/flashcards/composables/useDeck'
+import DeckFlashcards from '@/features/flashcards/components/DeckFlashcards.vue'
 import { formatDate } from '@/shared/utils'
 
 const route = useRoute()
@@ -91,7 +91,7 @@ async function handleDelete() {
       <BaseCard
         v-if="deck.description"
         padding="md"
-        class="mb-6"
+        class="mb-8"
       >
         <p class="text-sm text-gray-700">
           {{ deck.description }}
@@ -102,32 +102,12 @@ async function handleDelete() {
       </BaseCard>
       <p
         v-else
-        class="text-xs text-gray-400 mb-6"
+        class="text-xs text-gray-400 mb-8"
       >
         Created {{ formatDate(deck.created_at) }}
       </p>
 
-      <BaseEmptyState
-        title="No flashcards yet"
-        description="Flashcard management is coming in Part 4.2."
-      >
-        <template #icon>
-          <svg
-            class="w-6 h-6 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="1.5"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-            />
-          </svg>
-        </template>
-      </BaseEmptyState>
+      <DeckFlashcards :deck-id="deckId" />
     </template>
   </div>
 </template>
