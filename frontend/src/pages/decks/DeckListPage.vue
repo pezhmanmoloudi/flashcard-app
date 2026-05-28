@@ -1,26 +1,39 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/core/router/route-names'
+import { BasePageHeader, BaseButton, BaseEmptyState } from '@/shared/components/ui'
+import { useDecks } from '@/features/flashcards/composables/useDecks'
 
 const router = useRouter()
+const { decks, fetchDecks } = useDecks()
+
+onMounted(() => fetchDecks())
 </script>
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-semibold text-gray-900">
-        My Decks
-      </h2>
-      <button
-        class="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors"
-        @click="router.push({ name: ROUTE_NAMES.DECK_NEW })"
+    <BasePageHeader title="My Decks">
+      <template
+        v-if="decks.length > 0"
+        #actions
       >
-        New Deck
-      </button>
-    </div>
+        <BaseButton @click="router.push({ name: ROUTE_NAMES.DECK_NEW })">
+          New Deck
+        </BaseButton>
+      </template>
+    </BasePageHeader>
 
-    <p class="text-gray-400 text-sm">
-      No decks yet. Create one to get started.
-    </p>
+    <BaseEmptyState
+      v-if="decks.length === 0"
+      title="No decks yet"
+      description="Create your first deck to start learning."
+    >
+      <template #action>
+        <BaseButton @click="router.push({ name: ROUTE_NAMES.DECK_NEW })">
+          Create a deck
+        </BaseButton>
+      </template>
+    </BaseEmptyState>
   </div>
 </template>

@@ -25,33 +25,33 @@ function logout() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
-    <header class="bg-white border-b border-gray-200">
-      <nav class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+  <div class="min-h-screen bg-[var(--color-surface-alt)] flex flex-col">
+    <header class="bg-white border-b border-[var(--color-border)] sticky top-0 z-10">
+      <nav class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         <RouterLink
           :to="{ name: ROUTE_NAMES.DECKS }"
-          class="font-semibold text-gray-900 tracking-tight"
+          class="font-semibold text-[var(--color-text)] tracking-tight text-sm"
         >
           Flashcard App
         </RouterLink>
 
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-0.5">
           <RouterLink
             v-for="link in navLinks"
             :key="link.name"
             :to="{ name: link.name }"
-            class="px-3 py-1.5 rounded-md text-sm transition-colors"
+            class="px-3 py-1.5 rounded-lg text-sm transition-colors"
             :class="
               isActive(link.name)
-                ? 'bg-gray-100 text-gray-900 font-medium'
-                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)] font-medium'
+                : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
             "
           >
             {{ link.label }}
           </RouterLink>
 
           <button
-            class="ml-4 px-3 py-1.5 rounded-md text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+            class="ml-2 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
             @click="logout"
           >
             Logout
@@ -60,7 +60,7 @@ function logout() {
       </nav>
     </header>
 
-    <main class="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+    <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
       <RouterView />
     </main>
   </div>

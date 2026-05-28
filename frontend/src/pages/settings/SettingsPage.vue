@@ -1,13 +1,23 @@
 <script setup lang="ts">
+import { BasePageHeader, BaseCard } from '@/shared/components/ui'
+import { useAuthStore } from '@/core/stores/auth.store'
+
+const authStore = useAuthStore()
 </script>
 
 <template>
   <div>
-    <h2 class="text-xl font-semibold text-gray-900 mb-6">
-      Settings
-    </h2>
-    <p class="text-gray-400 text-sm">
-      Settings interface coming in Part 3.3.
-    </p>
+    <BasePageHeader title="Settings" />
+
+    <BaseCard>
+      <div class="space-y-1">
+        <p class="text-sm font-medium text-gray-700">
+          Account
+        </p>
+        <p class="text-sm text-gray-500">
+          {{ authStore.user?.email ?? '—' }}
+        </p>
+      </div>
+    </BaseCard>
   </div>
 </template>
