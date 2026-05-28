@@ -23,14 +23,21 @@ const { cardStyle, wasDragged, rightOpacity, leftOpacity, handlers } = useCardSw
 })
 
 /*
- * Flip is driven by native click, not by the swipe composable's pointer events.
- * This allows WordAudio to use @click.stop — blocking this handler when the
- * user taps the word, so audio plays without also flipping the card.
- * wasDragged guards against a synthetic click that some browsers fire after a
- * spring-back gesture (drag below threshold → release).
+ * Primary guard:  WordAudio uses @click.stop, which now works correctly
+ *                 because useCardSwipe no longer calls setPointerCapture.
+ *
+ * Secondary guard: even if the click reaches here, skip flip when it
+ *                 originated inside [data-audio-zone]. This also enforces
+ *                 "do nothing when no audio" — the attribute is always
+ *                 present on the word span regardless of audioSrc.
+ *
+ * wasDragged:     blocks any synthetic click browsers fire after a
+ *                 spring-back gesture (drag below threshold → release).
  */
-function handleCardClick() {
-  if (!wasDragged.value) emit('flip')
+function handleCardClick(e: MouseEvent) {
+  if (wasDragged.value) return
+  if ((e.target as HTMLElement).closest('[data-audio-zone]')) return
+  emit('flip')
 }
 
 const placeholder = computed(() => getPlaceholderColor(props.flashcard.id))
@@ -55,7 +62,7 @@ const flipStyle = computed(() => ({
     class="relative w-full select-none"
     :style="cardStyle"
     v-bind="handlers"
-    @click="handleCardClick"
+    @click="handleCardClick($event)"
   >
     <!-- Swipe feedback labels -->
     <div

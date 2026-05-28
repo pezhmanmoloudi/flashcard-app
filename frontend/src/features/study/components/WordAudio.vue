@@ -19,12 +19,25 @@ function handleInteract() {
 
 <!--
   Root is a single <span> so this component composes into any text context.
-  Class/style attrs from the parent fall through automatically (no inheritAttrs override needed).
-  @click.stop prevents the click from reaching the card's flip handler,
-  so tapping the word plays audio without also flipping the card.
+  Class/style attrs from the parent fall through automatically.
+
+  Two-layer interaction guard so tapping the word NEVER flips the card:
+
+  Primary:   @click.stop — stops the click from bubbling to the card's
+             flip handler. Works correctly now that useCardSwipe uses
+             document-level listeners instead of setPointerCapture
+             (pointer capture used to re-route click synthesis to the
+             capturing element, bypassing this stop entirely).
+
+  Secondary: data-audio-zone attribute — StudyCard's handleCardClick
+             checks target.closest('[data-audio-zone]') as a fallback,
+             so flip is blocked even in edge cases where stopPropagation
+             does not help. Also enforces "no flip when no audio" because
+             the attribute is always present regardless of audioSrc.
 -->
 <template>
   <span
+    data-audio-zone
     class="relative transition-colors duration-200"
     :class="{
       'cursor-pointer': hasAudio,

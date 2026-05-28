@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import type { CSSProperties } from 'vue'
 
 interface UseCardSwipeOptions {
@@ -14,15 +14,13 @@ export function useCardSwipe(options: UseCardSwipeOptions = {}) {
   const dragY = ref(0)
   const isDragging = ref(false)
   const isAnimating = ref(false)
-  // True if the pointer moved beyond the tap threshold during this gesture.
-  // The card's click handler reads this to skip the flip when the user
-  // was dragging (spring-back path) rather than tapping.
   const wasDragged = ref(false)
 
   let startX = 0
   let startY = 0
   let lastX = 0
   let velocityX = 0
+  let activePointerId = -1
 
   const TAP_THRESHOLD = 8
 
@@ -46,21 +44,23 @@ export function useCardSwipe(options: UseCardSwipeOptions = {}) {
     touchAction: 'none',
   }))
 
-  function onPointerDown(e: PointerEvent) {
-    if (isAnimating.value || isDragging.value) return
-    isDragging.value = true
-    wasDragged.value = false
-    startX = e.clientX
-    startY = e.clientY
-    lastX = e.clientX
-    velocityX = 0
-    dragX.value = 0
-    dragY.value = 0
-    ;(e.currentTarget as HTMLElement)?.setPointerCapture(e.pointerId)
-  }
+  // ── Document-level handlers ──────────────────────────────────────────────
+  //
+  // Why document listeners instead of setPointerCapture:
+  //
+  // setPointerCapture redirects ALL pointer events for that pointerId to the
+  // capturing element, including the browser's click synthesis that follows
+  // pointerup. This means the synthesised click fires on the outer card div
+  // (the capturing element) rather than on the element actually under the
+  // pointer (e.g. the WordAudio span). As a result, @click.stop on WordAudio
+  // never executes and every word-tap also triggers a card flip.
+  //
+  // Document-level listeners give the same reliable drag tracking across the
+  // full viewport without hijacking click dispatch, so @click.stop on
+  // WordAudio works as expected.
 
-  function onPointerMove(e: PointerEvent) {
-    if (!isDragging.value) return
+  function onDocumentPointerMove(e: PointerEvent) {
+    if (!isDragging.value || e.pointerId !== activePointerId) return
     velocityX = e.clientX - lastX
     lastX = e.clientX
     dragX.value = e.clientX - startX
@@ -70,9 +70,16 @@ export function useCardSwipe(options: UseCardSwipeOptions = {}) {
     }
   }
 
-  function onPointerUp() {
-    if (!isDragging.value) return
+  function detach() {
+    document.removeEventListener('pointermove', onDocumentPointerMove)
+    document.removeEventListener('pointerup', onDocumentPointerUp)
+    document.removeEventListener('pointercancel', onDocumentPointerCancel)
+  }
+
+  function onDocumentPointerUp(e: PointerEvent) {
+    if (!isDragging.value || e.pointerId !== activePointerId) return
     isDragging.value = false
+    detach()
 
     const dx = dragX.value
     const dy = dragY.value
@@ -99,14 +106,35 @@ export function useCardSwipe(options: UseCardSwipeOptions = {}) {
     }
   }
 
-  function onPointerCancel() {
-    if (!isDragging.value) return
+  function onDocumentPointerCancel(e: PointerEvent) {
+    if (!isDragging.value || e.pointerId !== activePointerId) return
     isDragging.value = false
+    detach()
     isAnimating.value = true
     dragX.value = 0
     dragY.value = 0
     setTimeout(() => { isAnimating.value = false }, 420)
   }
+
+  // ── Element handler (only pointerdown stays on the card element) ─────────
+
+  function onPointerDown(e: PointerEvent) {
+    if (isAnimating.value || isDragging.value) return
+    isDragging.value = true
+    wasDragged.value = false
+    activePointerId = e.pointerId
+    startX = e.clientX
+    startY = e.clientY
+    lastX = e.clientX
+    velocityX = 0
+    dragX.value = 0
+    dragY.value = 0
+    document.addEventListener('pointermove', onDocumentPointerMove)
+    document.addEventListener('pointerup', onDocumentPointerUp)
+    document.addEventListener('pointercancel', onDocumentPointerCancel)
+  }
+
+  onUnmounted(detach)
 
   return {
     dragX,
@@ -116,11 +144,10 @@ export function useCardSwipe(options: UseCardSwipeOptions = {}) {
     rightOpacity,
     leftOpacity,
     cardStyle,
+    // Only pointerdown is bound to the card element itself.
+    // Move / up / cancel are tracked at document level (see above).
     handlers: {
       onPointerdown: onPointerDown,
-      onPointermove: onPointerMove,
-      onPointerup: onPointerUp,
-      onPointercancel: onPointerCancel,
     },
   }
 }
