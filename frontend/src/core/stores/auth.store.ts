@@ -52,6 +52,10 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function setUser(updated: AuthUser) {
+    user.value = updated
+  }
+
   function logout() {
     clearAuth()
   }
@@ -62,6 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     isAuthenticated,
     clearAuth,
+    setUser,
     login,
     register,
     initialize,
