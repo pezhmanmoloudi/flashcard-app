@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_28_084748) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_28_175138) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,6 +52,37 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_28_084748) do
     t.index ["deck_id"], name: "index_flashcards_on_deck_id"
   end
 
+  create_table "quiz_questions", force: :cascade do |t|
+    t.bigint "quiz_session_id", null: false
+    t.bigint "flashcard_id", null: false
+    t.string "question_type", null: false
+    t.text "prompt", null: false
+    t.jsonb "options", default: [], null: false
+    t.string "correct_answer", null: false
+    t.string "user_answer"
+    t.boolean "answered_correctly"
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["flashcard_id"], name: "index_quiz_questions_on_flashcard_id"
+    t.index ["quiz_session_id", "position"], name: "index_quiz_questions_on_quiz_session_id_and_position"
+    t.index ["quiz_session_id"], name: "index_quiz_questions_on_quiz_session_id"
+  end
+
+  create_table "quiz_sessions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "deck_id", null: false
+    t.string "quiz_type", null: false
+    t.integer "total_questions", default: 0, null: false
+    t.integer "correct_answers", default: 0, null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deck_id"], name: "index_quiz_sessions_on_deck_id"
+    t.index ["user_id", "created_at"], name: "index_quiz_sessions_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_quiz_sessions_on_user_id"
+  end
+
   create_table "study_sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "deck_id", null: false
@@ -75,6 +106,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_28_084748) do
   add_foreign_key "card_progresses", "users"
   add_foreign_key "decks", "users"
   add_foreign_key "flashcards", "decks"
+  add_foreign_key "quiz_questions", "flashcards"
+  add_foreign_key "quiz_questions", "quiz_sessions"
+  add_foreign_key "quiz_sessions", "decks"
+  add_foreign_key "quiz_sessions", "users"
   add_foreign_key "study_sessions", "decks"
   add_foreign_key "study_sessions", "users"
 end
