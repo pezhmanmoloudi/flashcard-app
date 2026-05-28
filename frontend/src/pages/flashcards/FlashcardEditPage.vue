@@ -5,7 +5,9 @@ import { ROUTE_NAMES } from '@/core/router/route-names'
 import { BasePageHeader, BaseSpinner, BaseAlert } from '@/shared/components/ui'
 import { useFlashcard } from '@/features/flashcards/composables/useFlashcard'
 import FlashcardForm from '@/features/flashcards/components/FlashcardForm.vue'
-import type { FlashcardParams } from '@/features/flashcards/types'
+import FlashcardImageUpload from '@/features/flashcards/components/FlashcardImageUpload.vue'
+import FlashcardAudioUpload from '@/features/flashcards/components/FlashcardAudioUpload.vue'
+import type { FlashcardParams, Flashcard } from '@/features/flashcards/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,6 +21,10 @@ async function handleSubmit(params: FlashcardParams) {
   if (updated) {
     router.push({ name: ROUTE_NAMES.DECK_SHOW, params: { id: updated.deck_id } })
   }
+}
+
+function handleMediaUpdated(updated: Flashcard) {
+  flashcard.value = updated
 }
 </script>
 
@@ -42,20 +48,39 @@ async function handleSubmit(params: FlashcardParams) {
       :message="error"
     />
 
-    <FlashcardForm
-      v-else-if="flashcard"
-      submit-label="Save Changes"
-      :initial-values="{
-        front_text: flashcard.front_text,
-        back_text: flashcard.back_text,
-        source_language: flashcard.source_language,
-        target_language: flashcard.target_language,
-        example_sentence: flashcard.example_sentence,
-      }"
-      :loading="loading"
-      :error="loading ? null : error"
-      @submit="handleSubmit"
-      @cancel="router.push({ name: ROUTE_NAMES.DECK_SHOW, params: { id: flashcard.deck_id } })"
-    />
+    <template v-else-if="flashcard">
+      <FlashcardForm
+        submit-label="Save Changes"
+        :initial-values="{
+          front_text: flashcard.front_text,
+          back_text: flashcard.back_text,
+          source_language: flashcard.source_language,
+          target_language: flashcard.target_language,
+          example_sentence: flashcard.example_sentence,
+        }"
+        :loading="loading"
+        :error="loading ? null : error"
+        @submit="handleSubmit"
+        @cancel="router.push({ name: ROUTE_NAMES.DECK_SHOW, params: { id: flashcard.deck_id } })"
+      />
+
+      <div class="mt-8 pt-6 border-t border-[var(--color-border)] space-y-4">
+        <p class="text-sm font-semibold text-gray-900">
+          Media
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <FlashcardImageUpload
+            :flashcard-id="flashcard.id"
+            :image-url="flashcard.image_url"
+            @updated="handleMediaUpdated"
+          />
+          <FlashcardAudioUpload
+            :flashcard-id="flashcard.id"
+            :audio-url="flashcard.audio_url"
+            @updated="handleMediaUpdated"
+          />
+        </div>
+      </div>
+    </template>
   </div>
 </template>

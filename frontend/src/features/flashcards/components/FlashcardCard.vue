@@ -27,6 +27,17 @@ function formatLanguage(lang: string): string {
   <BaseCard padding="md">
     <div class="flex items-start justify-between gap-3">
       <div class="flex-1 min-w-0">
+        <div
+          v-if="flashcard.image_url"
+          class="mb-2 rounded-lg overflow-hidden border border-[var(--color-border)] max-h-28"
+        >
+          <img
+            :src="flashcard.image_url"
+            :alt="`Image for ${flashcard.front_text}`"
+            class="w-full h-full object-cover"
+          >
+        </div>
+
         <p class="text-sm font-semibold text-gray-900">
           {{ flashcard.front_text }}
         </p>
@@ -39,9 +50,16 @@ function formatLanguage(lang: string): string {
         >
           {{ flashcard.example_sentence }}
         </p>
-        <div class="mt-2">
+
+        <div class="mt-2 flex items-center gap-2 flex-wrap">
           <BaseBadge>
             {{ formatLanguage(flashcard.source_language) }} → {{ formatLanguage(flashcard.target_language) }}
+          </BaseBadge>
+          <BaseBadge
+            v-if="flashcard.audio_url"
+            variant="primary"
+          >
+            ♪ Audio
           </BaseBadge>
         </div>
       </div>
