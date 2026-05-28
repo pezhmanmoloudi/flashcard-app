@@ -15,7 +15,7 @@ export const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        redirect: { name: ROUTE_NAMES.DECKS },
+        redirect: { name: ROUTE_NAMES.DASHBOARD },
       },
       ...deckRoutes,
       ...flashcardRoutes,

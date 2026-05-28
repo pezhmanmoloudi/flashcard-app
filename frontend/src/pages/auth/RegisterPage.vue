@@ -21,7 +21,7 @@ async function submit() {
       password: password.value,
       password_confirmation: passwordConfirmation.value,
     })
-    router.push({ name: ROUTE_NAMES.DECKS })
+    router.push({ name: ROUTE_NAMES.DASHBOARD })
   } catch (e: unknown) {
     error.value =
       (e as { response?: { data?: { error?: string } } })?.response?.data?.error ??

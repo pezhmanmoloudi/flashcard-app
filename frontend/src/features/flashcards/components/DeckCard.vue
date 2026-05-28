@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/core/router/route-names'
 import { BaseCard, BaseButton } from '@/shared/components/ui'
 import { formatRelativeDate } from '@/shared/utils'
 import type { Deck } from '../types'
+import type { DeckStats } from '@/features/study/types'
 
 interface Props {
   deck: Deck
+  variant?: 'library' | 'dashboard'
+  stats?: DeckStats | null
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  variant: 'library',
+  stats: null,
+})
 
 const emit = defineEmits<{
   edit: [deck: Deck]
@@ -25,10 +31,68 @@ function navigate() {
     router.push({ name: ROUTE_NAMES.DECK_SHOW, params: { id: props.deck.id } })
   }
 }
+
+function studyNow() {
+  router.push({ name: ROUTE_NAMES.STUDY_SESSION, params: { deckId: props.deck.id } })
+}
+
+const masteryPercent = computed(() => {
+  if (!props.stats || props.stats.total_cards === 0) return 0
+  return Math.round((props.stats.mastered_count / props.stats.total_cards) * 100)
+})
 </script>
 
 <template>
+  <!-- Dashboard variant: study-focused, no management actions -->
+  <div
+    v-if="variant === 'dashboard'"
+    class="flex flex-col gap-4 bg-white border border-[var(--color-border)]
+           rounded-[var(--radius-card)] p-5 transition-shadow duration-200
+           hover:shadow-md dark:bg-gray-900 dark:border-gray-700"
+  >
+    <div class="flex-1 min-w-0">
+      <h3 class="text-base font-semibold text-[var(--color-text)] truncate">
+        {{ deck.name }}
+      </h3>
+      <p
+        v-if="deck.description"
+        class="mt-1 text-sm text-[var(--color-text-muted)] line-clamp-2 leading-relaxed"
+      >
+        {{ deck.description }}
+      </p>
+    </div>
+
+    <div class="flex items-center justify-between text-xs text-gray-400">
+      <span>{{ stats ? stats.total_cards : deck.flashcard_count }} cards</span>
+      <span v-if="stats">
+        {{ stats.mastered_count }} mastered &middot; {{ stats.due_count }} due
+      </span>
+    </div>
+
+    <div
+      class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden dark:bg-gray-700"
+      role="progressbar"
+      :aria-valuenow="masteryPercent"
+      aria-valuemin="0"
+      aria-valuemax="100"
+    >
+      <div
+        class="h-full bg-[var(--color-primary)] rounded-full transition-all duration-500"
+        :style="{ width: `${masteryPercent}%` }"
+      />
+    </div>
+
+    <BaseButton
+      class="w-full"
+      @click="studyNow"
+    >
+      Study Now
+    </BaseButton>
+  </div>
+
+  <!-- Library variant: full management actions (unchanged) -->
   <BaseCard
+    v-else
     hoverable
     padding="md"
     @click="navigate"

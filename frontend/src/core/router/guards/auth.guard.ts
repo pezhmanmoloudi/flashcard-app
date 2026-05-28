@@ -17,7 +17,7 @@ export function authGuard(
   }
 
   if (requiresGuest && authStore.isAuthenticated) {
-    next({ name: ROUTE_NAMES.DECKS })
+    next({ name: ROUTE_NAMES.DASHBOARD })
     return
   }
 

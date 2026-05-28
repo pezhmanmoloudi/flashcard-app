@@ -3,6 +3,12 @@ import { ROUTE_NAMES } from '../route-names'
 
 export const deckRoutes: RouteRecordRaw[] = [
   {
+    path: 'dashboard',
+    name: ROUTE_NAMES.DASHBOARD,
+    component: () => import('@/pages/decks/DashboardPage.vue'),
+    meta: { title: 'Dashboard' },
+  },
+  {
     path: 'decks',
     name: ROUTE_NAMES.DECKS,
     component: () => import('@/pages/decks/DeckListPage.vue'),

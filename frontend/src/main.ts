@@ -1,4 +1,4 @@
 import './style.css'
 import { bootstrap } from './app'
 
-bootstrap().mount('#app')
+bootstrap().then((app) => app.mount('#app'))

@@ -9,7 +9,7 @@ module Decks
     end
 
     def call
-      @user.decks.ordered
+      @user.decks.includes(:flashcards).ordered
     end
   end
 end

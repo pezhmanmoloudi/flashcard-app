@@ -3,6 +3,9 @@ export const ROUTE_NAMES = {
   AUTH_LOGIN: 'auth.login',
   AUTH_REGISTER: 'auth.register',
 
+  // Dashboard
+  DASHBOARD: 'dashboard',
+
   // Decks & Flashcards
   DECKS: 'decks',
   DECK_NEW: 'decks.new',
