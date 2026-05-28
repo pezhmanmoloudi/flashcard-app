@@ -1,5 +1,6 @@
 import { apiClient } from '@/core/api/client'
 import type { ApiResponse } from '@/shared/types'
+import type { Flashcard } from '@/features/flashcards/types'
 import type {
   StudySession,
   UpdateStudySessionParams,
@@ -13,6 +14,13 @@ interface StudySessionListResponse {
 }
 
 export const studyService = {
+  async getDueCards(deckId: number): Promise<Flashcard[]> {
+    const { data } = await apiClient.get<ApiResponse<Flashcard[]>>(
+      `/decks/${deckId}/due_flashcards`,
+    )
+    return data.data
+  },
+
   async listSessions(page = 1): Promise<StudySessionListResponse> {
     const { data } = await apiClient.get<StudySessionListResponse>('/study_sessions', {
       params: { page },

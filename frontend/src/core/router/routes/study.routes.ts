@@ -8,4 +8,10 @@ export const studyRoutes: RouteRecordRaw[] = [
     component: () => import('@/pages/study/StudySessionPage.vue'),
     meta: { title: 'Study' },
   },
+  {
+    path: 'study/:deckId',
+    name: ROUTE_NAMES.STUDY_SESSION,
+    component: () => import('@/pages/study/StudyActivePage.vue'),
+    meta: { title: 'Study Session' },
+  },
 ]
