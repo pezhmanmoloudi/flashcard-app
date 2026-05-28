@@ -9,7 +9,7 @@ const authStore = useAuthStore()
 
 const navLinks = [
   { name: ROUTE_NAMES.STUDY,    label: 'Study' },
-  { name: ROUTE_NAMES.QUIZZES,  label: 'Quiz' },
+  // { name: ROUTE_NAMES.QUIZZES,  label: 'Quiz' }, // temporarily hidden
   { name: ROUTE_NAMES.SETTINGS, label: 'Settings' },
 ]
 
