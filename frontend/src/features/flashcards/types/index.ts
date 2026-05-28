@@ -2,6 +2,7 @@ export interface Deck {
   id: number
   name: string
   description?: string
+  flashcard_count: number
   created_at: string
 }
 

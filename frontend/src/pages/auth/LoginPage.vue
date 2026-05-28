@@ -18,7 +18,7 @@ async function submit() {
   try {
     await authStore.login({ email: email.value, password: password.value })
     const redirect = route.query.redirect as string | undefined
-    router.push(redirect ?? { name: ROUTE_NAMES.DECKS })
+    router.push(redirect ?? { name: ROUTE_NAMES.DASHBOARD })
   } catch (e: unknown) {
     error.value =
       (e as { response?: { data?: { error?: string } } })?.response?.data?.error ??

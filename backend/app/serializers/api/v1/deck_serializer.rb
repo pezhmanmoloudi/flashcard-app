@@ -3,10 +3,11 @@ module Api
     class DeckSerializer < ApplicationSerializer
       def call
         {
-          id:          @resource.id,
-          name:        @resource.name,
-          description: @resource.description,
-          created_at:  @resource.created_at
+          id:              @resource.id,
+          name:            @resource.name,
+          description:     @resource.description,
+          flashcard_count: @resource.flashcards.size,
+          created_at:      @resource.created_at
         }
       end
     end

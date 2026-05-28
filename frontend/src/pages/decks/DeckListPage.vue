@@ -3,7 +3,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/core/router/route-names'
 import {
-  BasePageHeader,
   BaseButton,
   BaseEmptyState,
   BaseSpinner,
@@ -35,19 +34,16 @@ async function handleDelete(deck: Deck) {
 
 <template>
   <div>
-    <BasePageHeader
-      title="My Decks"
-      description="Manage your flashcard decks."
-    >
-      <template
-        v-if="decks.length > 0 || loading"
-        #actions
-      >
-        <BaseButton @click="router.push({ name: ROUTE_NAMES.DECK_NEW })">
-          New Deck
-        </BaseButton>
-      </template>
-    </BasePageHeader>
+    <!-- Header row -->
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-2xl font-semibold text-[var(--color-text)]">
+        Library
+      </h1>
+
+      <BaseButton @click="router.push({ name: ROUTE_NAMES.DECK_NEW })">
+        New Deck
+      </BaseButton>
+    </div>
 
     <BaseAlert
       v-if="error && !loading"

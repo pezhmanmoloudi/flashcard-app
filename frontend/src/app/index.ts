@@ -5,7 +5,7 @@ import { router } from '@/core/router'
 import { setupInterceptors } from '@/core/api/interceptors'
 import { useAuthStore } from '@/core/stores/auth.store'
 
-export function bootstrap() {
+export async function bootstrap() {
   const app = createApp(App)
   const pinia = createPinia()
 
@@ -13,7 +13,9 @@ export function bootstrap() {
   app.use(router)
 
   setupInterceptors()
-  useAuthStore().initialize()
+
+  await router.isReady()
+  await useAuthStore().initialize()
 
   return app
 }
