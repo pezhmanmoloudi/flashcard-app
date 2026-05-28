@@ -1,4 +1,7 @@
 import { apiClient } from './client'
+import { router } from '@/core/router'
+import { useAuthStore } from '@/core/stores/auth.store'
+import { ROUTE_NAMES } from '@/core/router/route-names'
 
 export function setupInterceptors() {
   apiClient.interceptors.request.use((config) => {
@@ -13,8 +16,8 @@ export function setupInterceptors() {
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        localStorage.removeItem('auth_token')
-        window.location.href = '/login'
+        useAuthStore().clearAuth()
+        router.push({ name: ROUTE_NAMES.AUTH_LOGIN })
       }
       return Promise.reject(error)
     },

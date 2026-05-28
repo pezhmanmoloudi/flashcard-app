@@ -1,3 +1,8 @@
+export interface AuthUser {
+  id: number
+  email: string
+}
+
 export interface LoginCredentials {
   email: string
   password: string
@@ -6,14 +11,12 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string
   password: string
-  name: string
+  password_confirmation: string
 }
 
-export interface AuthResponse {
-  token: string
-  user: {
-    id: number
-    email: string
-    name: string
+export interface AuthApiResponse {
+  data: {
+    token: string
+    user: AuthUser
   }
 }
