@@ -65,7 +65,8 @@ module Api
         params.require(:flashcard).permit(
           :front_text, :back_text,
           :source_language, :target_language,
-          :example_sentence, :image_url, :audio_url
+          :example_sentence, :translated_sentence, :grammar_notes,
+          :image_url, :audio_url
         )
       end
     end

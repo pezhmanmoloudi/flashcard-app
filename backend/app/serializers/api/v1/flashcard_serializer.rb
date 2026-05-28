@@ -9,10 +9,12 @@ module Api
           back_text:        @resource.back_text,
           source_language:  @resource.source_language,
           target_language:  @resource.target_language,
-          example_sentence: @resource.example_sentence,
-          image_url:        @resource.image_url,
-          audio_url:        @resource.audio_url,
-          created_at:       @resource.created_at
+          example_sentence:    @resource.example_sentence,
+          translated_sentence: @resource.translated_sentence,
+          grammar_notes:       @resource.grammar_notes,
+          image_url:           @resource.image_url,
+          audio_url:           @resource.audio_url,
+          created_at:          @resource.created_at
         }
       end
     end
