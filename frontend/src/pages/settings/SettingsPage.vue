@@ -1,23 +1,29 @@
 <script setup lang="ts">
-import { BasePageHeader, BaseCard } from '@/shared/components/ui'
+import { BasePageHeader } from '@/shared/components/ui'
 import { useAuthStore } from '@/core/stores/auth.store'
+import ProfileInfoCard from '@/features/settings/components/ProfileInfoCard.vue'
+import EmailUpdateCard from '@/features/settings/components/EmailUpdateCard.vue'
+import PasswordUpdateCard from '@/features/settings/components/PasswordUpdateCard.vue'
 
 const authStore = useAuthStore()
 </script>
 
 <template>
   <div>
-    <BasePageHeader title="Settings" />
+    <BasePageHeader
+      title="Settings"
+      description="Manage your account information."
+    />
 
-    <BaseCard>
-      <div class="space-y-1">
-        <p class="text-sm font-medium text-gray-700">
-          Account
-        </p>
-        <p class="text-sm text-gray-500">
-          {{ authStore.user?.email ?? '—' }}
-        </p>
-      </div>
-    </BaseCard>
+    <div class="space-y-4 max-w-lg">
+      <ProfileInfoCard
+        v-if="authStore.user"
+        :user="authStore.user"
+      />
+
+      <EmailUpdateCard />
+
+      <PasswordUpdateCard />
+    </div>
   </div>
 </template>

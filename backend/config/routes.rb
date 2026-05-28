@@ -11,7 +11,9 @@ Rails.application.routes.draw do
       get  "health",       to: "health#show"
       post "auth/signup",  to: "auth#signup"
       post "auth/login",   to: "auth#login"
-      get  "profile",      to: "profiles#show"
+      get   "profile",          to: "profiles#show"
+      patch "profile/email",    to: "profiles#update_email"
+      patch "profile/password", to: "profiles#update_password"
       get  "stats",        to: "stats#show"
       resources :decks do
         resources :flashcards,     shallow: true
