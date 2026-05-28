@@ -9,6 +9,10 @@ export const ROUTE_NAMES = {
   DECK_SHOW: 'decks.show',
   DECK_EDIT: 'decks.edit',
 
+  // Flashcards
+  FLASHCARD_NEW: 'decks.flashcards.new',
+  FLASHCARD_EDIT: 'flashcards.edit',
+
   // Study
   STUDY: 'study',
 
