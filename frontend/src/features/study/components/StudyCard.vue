@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 import type { Flashcard } from '@/features/flashcards/types'
 import { useCardSwipe } from '../composables/useCardSwipe'
 import { getPlaceholderColor } from '../utils/placeholder'
-import AudioButton from './AudioButton.vue'
+import WordAudio from './WordAudio.vue'
 
 interface Props {
   flashcard: Flashcard
@@ -17,23 +17,21 @@ const emit = defineEmits<{
   swipeLeft: []
 }>()
 
-const audioBtn = ref<InstanceType<typeof AudioButton> | null>(null)
-
-const { cardStyle, rightOpacity, leftOpacity, handlers } = useCardSwipe({
-  onTap: () => emit('flip'),
+const { cardStyle, wasDragged, rightOpacity, leftOpacity, handlers } = useCardSwipe({
   onSwipeRight: () => emit('swipeRight'),
   onSwipeLeft: () => emit('swipeLeft'),
 })
 
-// Auto-play pronunciation when card is revealed
-watch(
-  () => props.isFlipped,
-  (flipped) => {
-    if (flipped && props.flashcard.audio_url) {
-      audioBtn.value?.play()
-    }
-  },
-)
+/*
+ * Flip is driven by native click, not by the swipe composable's pointer events.
+ * This allows WordAudio to use @click.stop — blocking this handler when the
+ * user taps the word, so audio plays without also flipping the card.
+ * wasDragged guards against a synthetic click that some browsers fire after a
+ * spring-back gesture (drag below threshold → release).
+ */
+function handleCardClick() {
+  if (!wasDragged.value) emit('flip')
+}
 
 const placeholder = computed(() => getPlaceholderColor(props.flashcard.id))
 
@@ -45,14 +43,19 @@ const flipStyle = computed(() => ({
 
 <template>
   <!--
-    Outer div: drag physics (translate + tilt via cardStyle).
-    Inner flip container: rotateY for 3D flip.
-    Keeping these on separate elements prevents the two transforms from conflicting.
+    Two-element transform split:
+      Outer div  → translate + rotateZ (drag physics via cardStyle)
+      Inner div  → rotateY             (3D flip)
+    Keeping them on separate elements prevents the transforms from fighting.
+
+    Flip is on @click here; WordAudio uses @click.stop, so tapping
+    the word plays audio without triggering this handler.
   -->
   <div
     class="relative w-full select-none"
     :style="cardStyle"
     v-bind="handlers"
+    @click="handleCardClick"
   >
     <!-- Swipe feedback labels -->
     <div
@@ -98,20 +101,15 @@ const flipStyle = computed(() => ({
             >
               {{ flashcard.front_text.charAt(0).toUpperCase() }}
             </span>
-
-            <div
-              v-if="flashcard.audio_url"
-              class="absolute bottom-3 right-3"
-            >
-              <AudioButton :src="flashcard.audio_url" />
-            </div>
           </div>
 
-          <!-- Word strip -->
+          <!-- Word strip — tap the word to hear pronunciation -->
           <div class="bg-white px-5 py-4 border-t border-gray-100/80">
-            <p class="text-2xl font-bold text-gray-900 leading-tight">
-              {{ flashcard.front_text }}
-            </p>
+            <WordAudio
+              :text="flashcard.front_text"
+              :audio-src="flashcard.audio_url"
+              class="text-2xl font-bold text-gray-900 leading-tight"
+            />
             <p class="mt-0.5 text-[11px] text-gray-400 uppercase tracking-widest">
               {{ flashcard.source_language }}
             </p>
@@ -121,9 +119,12 @@ const flipStyle = computed(() => ({
         <!-- ── Back face ── -->
         <div class="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden rounded-2xl bg-white">
           <div class="flex-1 flex flex-col items-center justify-center gap-4 px-6 py-8">
-            <p class="text-3xl font-bold text-[var(--color-primary)] text-center leading-tight">
-              {{ flashcard.back_text }}
-            </p>
+            <!-- Translation — also tappable to replay pronunciation -->
+            <WordAudio
+              :text="flashcard.back_text"
+              :audio-src="flashcard.audio_url"
+              class="text-3xl font-bold text-[var(--color-primary)] text-center leading-tight"
+            />
             <p class="text-[11px] text-gray-400 uppercase tracking-widest">
               {{ flashcard.target_language }}
             </p>
@@ -136,16 +137,6 @@ const flipStyle = computed(() => ({
                 "{{ flashcard.example_sentence }}"
               </p>
             </div>
-          </div>
-
-          <div
-            v-if="flashcard.audio_url"
-            class="pb-5 flex justify-center"
-          >
-            <AudioButton
-              ref="audioBtn"
-              :src="flashcard.audio_url"
-            />
           </div>
         </div>
       </div>
@@ -161,7 +152,7 @@ const flipStyle = computed(() => ({
         key="front-hint"
         class="mt-3 text-center text-xs text-gray-400"
       >
-        tap to reveal · swipe to answer
+        tap word to hear · swipe to answer
       </p>
       <p
         v-else
