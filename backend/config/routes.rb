@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       resources :decks do
         resources :flashcards,     shallow: true
         resources :study_sessions, only: [:create]
+        get :due_flashcards, to: "flashcards#due", on: :member
       end
 
       resources :study_sessions, only: [:index, :update]

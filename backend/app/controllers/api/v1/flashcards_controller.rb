@@ -4,12 +4,18 @@ module Api
       include Authenticatable
       include Paginatable
 
-      before_action :set_deck,      only: [:index, :create]
-      before_action :set_flashcard, only: [:show, :update, :destroy]
+      before_action :set_deck,         only: [:index, :create]
+      before_action :set_deck_by_id,   only: [:due]
+      before_action :set_flashcard,    only: [:show, :update, :destroy]
 
       def index
         pagy, flashcards = paginate(Flashcards::ListFlashcardsQuery.call(deck: @deck))
         render_collection(Api::V1::FlashcardSerializer.collection(flashcards), pagy)
+      end
+
+      def due
+        flashcards = Study::SelectDueCardsQuery.call(user: current_user, deck: @deck)
+        render json: { data: Api::V1::FlashcardSerializer.collection(flashcards) }, status: :ok
       end
 
       def show
@@ -45,6 +51,10 @@ module Api
 
       def set_deck
         @deck = Decks::FindDeckQuery.call(user: current_user, id: params[:deck_id])
+      end
+
+      def set_deck_by_id
+        @deck = Decks::FindDeckQuery.call(user: current_user, id: params[:id])
       end
 
       def set_flashcard

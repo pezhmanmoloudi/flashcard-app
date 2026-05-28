@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_27_205103) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_28_084748) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -24,6 +24,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_27_205103) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["flashcard_id"], name: "index_card_progresses_on_flashcard_id"
+    t.index ["next_review_at"], name: "index_card_progresses_on_next_review_at"
     t.index ["user_id", "flashcard_id"], name: "index_card_progresses_on_user_id_and_flashcard_id", unique: true
     t.index ["user_id"], name: "index_card_progresses_on_user_id"
   end
