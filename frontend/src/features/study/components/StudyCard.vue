@@ -75,12 +75,20 @@ const flipStyle = computed(() => ({
 
     <!-- 3D perspective wrapper -->
     <div style="perspective: 1400px">
+      <!--
+        overflow-hidden must NOT be on the preserve-3d element.
+        Per the CSS spec it is a "grouping property" that flattens the 3D
+        rendering context: children get composited into a flat 2D surface
+        first, so the back face's rotateY(180deg) bakes in as scaleX(-1)
+        (a 2D mirror) before the parent flip applies — producing reversed text.
+        shadow-md and overflow-hidden belong on each face individually.
+      -->
       <div
-        class="relative w-full rounded-2xl shadow-md overflow-hidden [transform-style:preserve-3d]"
+        class="relative w-full [transform-style:preserve-3d]"
         :style="[flipStyle, { minHeight: '440px' }]"
       >
         <!-- ── Front face ── -->
-        <div class="absolute inset-0 [backface-visibility:hidden] flex flex-col overflow-hidden rounded-2xl bg-white">
+        <div class="absolute inset-0 [backface-visibility:hidden] flex flex-col overflow-hidden rounded-2xl bg-white shadow-md">
           <!-- Image / placeholder -->
           <div
             class="flex-1 relative flex items-center justify-center overflow-hidden"
@@ -117,7 +125,7 @@ const flipStyle = computed(() => ({
         </div>
 
         <!-- ── Back face ── -->
-        <div class="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden rounded-2xl bg-white">
+        <div class="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden rounded-2xl bg-white shadow-md">
           <div class="flex-1 flex flex-col items-center justify-center gap-4 px-6 py-8">
             <!-- Translation — also tappable to replay pronunciation -->
             <WordAudio
