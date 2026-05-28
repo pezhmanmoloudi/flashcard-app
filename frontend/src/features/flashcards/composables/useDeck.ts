@@ -34,5 +34,19 @@ export function useDeck() {
     }
   }
 
-  return { deck, loading, error, fetchDeck, updateDeck }
+  async function deleteDeck(id: number): Promise<boolean> {
+    loading.value = true
+    error.value = null
+    try {
+      await deckService.destroy(id)
+      return true
+    } catch (e) {
+      error.value = extractError(e)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return { deck, loading, error, fetchDeck, updateDeck, deleteDeck }
 }
