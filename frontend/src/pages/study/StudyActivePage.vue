@@ -7,7 +7,6 @@ import { useStudyFlow } from '@/features/study/composables/useStudyFlow'
 import { useCardFlip } from '@/features/study/composables/useCardFlip'
 import StudyCard from '@/features/study/components/StudyCard.vue'
 import StudyProgress from '@/features/study/components/StudyProgress.vue'
-import StudyComplete from '@/features/study/components/StudyComplete.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,8 +18,6 @@ const {
   total,
   loading,
   error,
-  completed,
-  cardsStudied,
   startStudy,
   rateCard,
 } = useStudyFlow()
@@ -56,7 +53,7 @@ onUnmounted(() => {
   <div class="flex flex-col max-w-sm mx-auto gap-4">
     <div class="flex items-center justify-between">
       <button
-        class="text-sm text-gray-400 hover:text-gray-700 transition-colors"
+        class="text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200 -ml-2.5 px-2.5 py-1.5 rounded-lg transition-colors"
         @click="router.push({ name: ROUTE_NAMES.STUDY })"
       >
         ← Back
@@ -74,13 +71,6 @@ onUnmounted(() => {
       v-else-if="error"
       variant="error"
       :message="error"
-    />
-
-    <StudyComplete
-      v-else-if="completed"
-      :cards-studied="cardsStudied"
-      @study-again="startStudy(deckId)"
-      @back-to-deck="router.push({ name: ROUTE_NAMES.DECK_SHOW, params: { id: deckId } })"
     />
 
     <template v-else-if="currentCard">

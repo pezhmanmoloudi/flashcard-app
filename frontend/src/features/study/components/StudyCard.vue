@@ -135,7 +135,7 @@ const flipStyle = computed(() => ({
         <div class="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col overflow-hidden rounded-2xl bg-white shadow-md">
 
           <!-- TOP: translation — most prominent element -->
-          <div class="flex flex-col items-center justify-center text-center px-6 pt-8 pb-5">
+          <div class="flex flex-col items-center justify-center text-center px-6 pt-8 pb-6">
             <WordAudio
               :text="flashcard.back_text"
               :audio-src="flashcard.audio_url"
@@ -146,35 +146,16 @@ const flipStyle = computed(() => ({
             </p>
           </div>
 
-          <!-- MIDDLE: original word for reference -->
-          <div class="flex flex-col items-center text-center px-6 py-4 border-t border-gray-100">
-            <p class="text-base font-medium text-gray-500">
-              {{ flashcard.front_text }}
-            </p>
-            <p class="mt-0.5 text-[10px] text-gray-300 uppercase tracking-widest">
-              {{ flashcard.source_language }}
-            </p>
-          </div>
-
-          <!-- BOTTOM: learning context — example, sentence translation, grammar -->
+          <!-- BOTTOM: learning context — translated sentence, grammar -->
           <div
-            v-if="flashcard.example_sentence || flashcard.grammar_notes"
+            v-if="flashcard.translated_sentence || flashcard.grammar_notes"
             class="flex-1 px-5 pb-5 pt-2 space-y-2 overflow-y-auto"
           >
             <div
-              v-if="flashcard.example_sentence"
-              class="rounded-xl bg-gray-50 px-4 py-3 space-y-1.5"
+              v-if="flashcard.translated_sentence"
+              class="rounded-xl bg-gray-50 px-4 py-3"
             >
-              <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                Example
-              </p>
-              <p class="text-sm text-gray-500 italic leading-relaxed">
-                "{{ flashcard.example_sentence }}"
-              </p>
-              <p
-                v-if="flashcard.translated_sentence"
-                class="text-sm text-gray-700 leading-relaxed"
-              >
+              <p class="text-sm text-gray-700 leading-relaxed">
                 {{ flashcard.translated_sentence }}
               </p>
             </div>
@@ -192,7 +173,7 @@ const flipStyle = computed(() => ({
             </div>
           </div>
 
-          <!-- Spacer when there is no learning-context content -->
+          <!-- Spacer when there is no contextual content -->
           <div
             v-else
             class="flex-1"
