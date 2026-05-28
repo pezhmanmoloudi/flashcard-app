@@ -2,23 +2,7 @@ import { ref, computed } from 'vue'
 import { extractError } from '@/shared/utils'
 import type { Flashcard } from '@/features/flashcards/types'
 import { studyService } from '../services/study.service'
-import type { StudySession, StudyRating, CardProgressParams } from '../types'
-
-// Simple SM-2 stub — proper algorithm implemented in Part 5.1
-function calculateSM2(rating: StudyRating): CardProgressParams {
-  const intervalMap: Record<StudyRating, number> = { again: 1, hard: 1, good: 3, easy: 7 }
-  const efMap: Record<StudyRating, number> = { again: 2.0, hard: 2.2, good: 2.5, easy: 2.7 }
-  const intervalDays = intervalMap[rating]
-  const nextReview = new Date()
-  nextReview.setDate(nextReview.getDate() + intervalDays)
-
-  return {
-    repetitions: rating === 'again' ? 0 : 1,
-    easiness_factor: efMap[rating],
-    interval_days: intervalDays,
-    next_review_at: nextReview.toISOString(),
-  }
-}
+import type { StudySession, StudyRating } from '../types'
 
 export function useStudyFlow() {
   const cards = ref<Flashcard[]>([])
@@ -73,15 +57,10 @@ export function useStudyFlow() {
     const card = currentCard.value
     if (!card || !isFlipped.value) return
 
-    const params = calculateSM2(rating)
     try {
-      await studyService.updateProgress(card.id, params)
+      await studyService.reviewCard(card.id, rating)
     } catch {
-      try {
-        await studyService.createProgress(card.id, params)
-      } catch {
-        // Progress update failed — continue the session
-      }
+      // Progress update failed — continue the session
     }
 
     cardsStudied.value++

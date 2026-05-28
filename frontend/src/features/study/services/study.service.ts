@@ -6,6 +6,7 @@ import type {
   UpdateStudySessionParams,
   CardProgress,
   CardProgressParams,
+  StudyRating,
 } from '../types'
 
 interface StudySessionListResponse {
@@ -62,6 +63,14 @@ export const studyService = {
     const { data } = await apiClient.put<ApiResponse<CardProgress>>(
       `/flashcards/${flashcardId}/progress`,
       { card_progress: params },
+    )
+    return data.data
+  },
+
+  async reviewCard(flashcardId: number, rating: StudyRating): Promise<CardProgress> {
+    const { data } = await apiClient.post<ApiResponse<CardProgress>>(
+      `/flashcards/${flashcardId}/progress/review`,
+      { rating },
     )
     return data.data
   },

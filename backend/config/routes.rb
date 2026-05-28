@@ -20,7 +20,9 @@ Rails.application.routes.draw do
       resources :study_sessions, only: [:index, :update]
 
       resources :flashcards, only: [] do
-        resource :progress, only: [:show, :create, :update], controller: "card_progresses"
+        resource :progress, only: [:show, :create, :update], controller: "card_progresses" do
+          post :review, on: :member
+        end
       end
     end
   end
