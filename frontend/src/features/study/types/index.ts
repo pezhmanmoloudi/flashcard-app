@@ -30,3 +30,18 @@ export interface CardProgressParams {
   interval_days: number
   next_review_at: string
 }
+
+export interface UserStats {
+  total_cards_studied: number
+  total_sessions: number
+  study_streak: number
+  cards_mastered: number
+}
+
+export interface DeckStats {
+  total_cards: number
+  new_count: number
+  due_count: number
+  mastered_count: number
+  learning_count: number
+}

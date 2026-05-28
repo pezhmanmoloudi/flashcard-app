@@ -4,7 +4,7 @@ module Api
       include Authenticatable
       include Paginatable
 
-      before_action :set_deck, only: [:show, :update, :destroy]
+      before_action :set_deck, only: [:show, :update, :destroy, :stats]
 
       def index
         pagy, decks = paginate(Decks::ListDecksQuery.call(user: current_user))
@@ -38,6 +38,11 @@ module Api
       def destroy
         Decks::DestroyDeckService.call(deck: @deck)
         render_no_content
+      end
+
+      def stats
+        deck_stats = Study::DeckStatsQuery.call(user: current_user, deck: @deck)
+        render_ok(Api::V1::DeckStatsSerializer.call(deck_stats))
       end
 
       private

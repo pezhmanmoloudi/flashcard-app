@@ -12,10 +12,12 @@ Rails.application.routes.draw do
       post "auth/signup",  to: "auth#signup"
       post "auth/login",   to: "auth#login"
       get  "profile",      to: "profiles#show"
+      get  "stats",        to: "stats#show"
       resources :decks do
         resources :flashcards,     shallow: true
         resources :study_sessions, only: [:create]
         get :due_flashcards, to: "flashcards#due", on: :member
+        get :stats,          to: "decks#stats",    on: :member
       end
 
       resources :study_sessions, only: [:index, :update]

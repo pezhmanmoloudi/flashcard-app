@@ -11,15 +11,20 @@ import {
 } from '@/shared/components/ui'
 import { useDeck } from '@/features/flashcards/composables/useDeck'
 import DeckFlashcards from '@/features/flashcards/components/DeckFlashcards.vue'
+import { useStats } from '@/features/study/composables/useStats'
 import { formatDate } from '@/shared/utils'
 
 const route = useRoute()
 const router = useRouter()
 const deckId = Number(route.params.id)
 const { deck, loading, error, fetchDeck, deleteDeck } = useDeck()
+const { deckStats, fetchDeckStats } = useStats()
 const confirmingDelete = ref(false)
 
-onMounted(() => fetchDeck(deckId))
+onMounted(() => {
+  fetchDeck(deckId)
+  fetchDeckStats(deckId)
+})
 
 async function handleDelete() {
   const ok = await deleteDeck(deckId)
@@ -106,6 +111,29 @@ async function handleDelete() {
       >
         Created {{ formatDate(deck.created_at) }}
       </p>
+
+      <div
+        v-if="deckStats"
+        class="grid grid-cols-4 gap-3 mb-8"
+      >
+        <div
+          v-for="stat in [
+            { label: 'Total', value: deckStats.total_cards },
+            { label: 'Due', value: deckStats.due_count },
+            { label: 'Learning', value: deckStats.learning_count },
+            { label: 'Mastered', value: deckStats.mastered_count },
+          ]"
+          :key="stat.label"
+          class="rounded-[var(--radius-card)] bg-gray-50 px-3 py-3 text-center"
+        >
+          <p class="text-xl font-semibold text-gray-900">
+            {{ stat.value }}
+          </p>
+          <p class="text-xs text-gray-400 mt-0.5">
+            {{ stat.label }}
+          </p>
+        </div>
+      </div>
 
       <DeckFlashcards :deck-id="deckId" />
     </template>

@@ -7,6 +7,8 @@ import type {
   CardProgress,
   CardProgressParams,
   StudyRating,
+  UserStats,
+  DeckStats,
 } from '../types'
 
 interface StudySessionListResponse {
@@ -72,6 +74,16 @@ export const studyService = {
       `/flashcards/${flashcardId}/progress/review`,
       { rating },
     )
+    return data.data
+  },
+
+  async fetchUserStats(): Promise<UserStats> {
+    const { data } = await apiClient.get<ApiResponse<UserStats>>('/stats')
+    return data.data
+  },
+
+  async fetchDeckStats(deckId: number): Promise<DeckStats> {
+    const { data } = await apiClient.get<ApiResponse<DeckStats>>(`/decks/${deckId}/stats`)
     return data.data
   },
 }
