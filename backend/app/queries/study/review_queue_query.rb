@@ -20,7 +20,10 @@ module Study
           "decks.user_id = :uid OR decks.is_system = :sys",
           uid: @user.id, sys: true
         )
-        .where("card_progresses.id IS NULL OR card_progresses.next_review_at <= :now", now: Time.current)
+        .where(
+          "card_progresses.id IS NOT NULL AND card_progresses.next_review_at <= :now",
+          now: Time.current
+        )
         .group(
           "decks.id", "decks.name", "decks.description",
           "decks.level", "decks.language_pair", "decks.position",
@@ -45,8 +48,9 @@ module Study
     private
 
     def user_progress_join
+      # INNER JOIN: we only want cards that have been reviewed at least once.
       # @user.id is an integer PK — safe to interpolate.
-      "LEFT JOIN card_progresses " \
+      "INNER JOIN card_progresses " \
       "ON card_progresses.flashcard_id = flashcards.id " \
       "AND card_progresses.user_id = #{@user.id.to_i}"
     end

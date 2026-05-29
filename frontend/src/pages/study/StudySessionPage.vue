@@ -30,12 +30,16 @@ function studySet(deckId: number, setId: number) {
   router.push({
     name: ROUTE_NAMES.STUDY_SESSION,
     params: { deckId },
-    query: { setId },
+    query: { setId, reviewsOnly: 'true' },
   })
 }
 
 function studyDeck(deckId: number) {
-  router.push({ name: ROUTE_NAMES.STUDY_SESSION, params: { deckId } })
+  router.push({
+    name: ROUTE_NAMES.STUDY_SESSION,
+    params: { deckId },
+    query: { reviewsOnly: 'true' },
+  })
 }
 
 const LANGUAGE_PAIR_LABELS: Record<string, string> = {

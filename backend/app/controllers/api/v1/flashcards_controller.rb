@@ -17,7 +17,8 @@ module Api
         flashcards = Study::SelectDueCardsQuery.call(
           user:             current_user,
           deck:             @deck,
-          flashcard_set_id: params[:flashcard_set_id].presence
+          flashcard_set_id: params[:flashcard_set_id].presence,
+          reviews_only:     params[:reviews_only] == "true"
         )
         render json: { data: Api::V1::FlashcardSerializer.collection(flashcards) }, status: :ok
       end

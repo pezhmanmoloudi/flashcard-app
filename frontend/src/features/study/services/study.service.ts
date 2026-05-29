@@ -23,8 +23,10 @@ export const studyService = {
     return data.data
   },
 
-  async getDueCards(deckId: number, setId?: number): Promise<Flashcard[]> {
-    const params = setId ? { flashcard_set_id: setId } : {}
+  async getDueCards(deckId: number, setId?: number, reviewsOnly = false): Promise<Flashcard[]> {
+    const params: Record<string, unknown> = {}
+    if (setId) params.flashcard_set_id = setId
+    if (reviewsOnly) params.reviews_only = 'true'
     const { data } = await apiClient.get<ApiResponse<Flashcard[]>>(
       `/decks/${deckId}/due_flashcards`,
       { params },
