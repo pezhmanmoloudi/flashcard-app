@@ -9,6 +9,7 @@ import type {
   StudyRating,
   UserStats,
   DeckStats,
+  ReviewQueueDeck,
 } from '../types'
 
 interface StudySessionListResponse {
@@ -17,9 +18,18 @@ interface StudySessionListResponse {
 }
 
 export const studyService = {
-  async getDueCards(deckId: number): Promise<Flashcard[]> {
+  async fetchReviewQueue(): Promise<ReviewQueueDeck[]> {
+    const { data } = await apiClient.get<ApiResponse<ReviewQueueDeck[]>>('/study/queue')
+    return data.data
+  },
+
+  async getDueCards(deckId: number, setId?: number, reviewsOnly = false): Promise<Flashcard[]> {
+    const params: Record<string, unknown> = {}
+    if (setId) params.flashcard_set_id = setId
+    if (reviewsOnly) params.reviews_only = 'true'
     const { data } = await apiClient.get<ApiResponse<Flashcard[]>>(
       `/decks/${deckId}/due_flashcards`,
+      { params },
     )
     return data.data
   },

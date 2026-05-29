@@ -11,6 +11,8 @@ import StudyProgress from '@/features/study/components/StudyProgress.vue'
 const route = useRoute()
 const router = useRouter()
 const deckId = Number(route.params.deckId)
+const setId = route.query.setId ? Number(route.query.setId) : undefined
+const reviewsOnly = route.query.reviewsOnly === 'true'
 
 const {
   currentCard,
@@ -40,7 +42,7 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  startStudy(deckId)
+  startStudy(deckId, setId, reviewsOnly)
   window.addEventListener('keydown', handleKeydown)
 })
 

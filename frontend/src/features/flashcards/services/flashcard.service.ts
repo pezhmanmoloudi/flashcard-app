@@ -8,9 +8,11 @@ interface FlashcardListResponse {
 }
 
 export const flashcardService = {
-  async list(deckId: number, page = 1): Promise<FlashcardListResponse> {
+  async list(deckId: number, page = 1, perPage?: number): Promise<FlashcardListResponse> {
+    const params: Record<string, number> = { page }
+    if (perPage) params.per_page = perPage
     const { data } = await apiClient.get<FlashcardListResponse>(`/decks/${deckId}/flashcards`, {
-      params: { page },
+      params,
     })
     return data
   },

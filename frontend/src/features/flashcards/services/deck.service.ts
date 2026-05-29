@@ -8,8 +8,10 @@ interface DeckListResponse {
 }
 
 export const deckService = {
-  async list(page = 1): Promise<DeckListResponse> {
-    const { data } = await apiClient.get<DeckListResponse>('/decks', { params: { page } })
+  async list(page = 1, perPage?: number): Promise<DeckListResponse> {
+    const params: Record<string, number> = { page }
+    if (perPage) params.per_page = perPage
+    const { data } = await apiClient.get<DeckListResponse>('/decks', { params })
     return data
   },
 
