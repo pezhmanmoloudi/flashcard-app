@@ -10,11 +10,11 @@ export function useFlashcards() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  async function fetchFlashcards(deckId: number, page = 1) {
+  async function fetchFlashcards(deckId: number, page = 1, perPage?: number) {
     loading.value = true
     error.value = null
     try {
-      const result = await flashcardService.list(deckId, page)
+      const result = await flashcardService.list(deckId, page, perPage)
       flashcards.value = result.data
       meta.value = result.meta ?? null
     } catch (e) {

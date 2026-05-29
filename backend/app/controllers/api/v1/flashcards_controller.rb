@@ -58,7 +58,7 @@ module Api
       private
 
       def set_deck
-        @deck = Decks::FindDeckQuery.call(user: current_user, id: params[:deck_id])
+        @deck = Decks::FindDeckQuery.call(user: current_user, id: params[:deck_id].presence || params[:id])
       end
 
       def set_flashcard_set

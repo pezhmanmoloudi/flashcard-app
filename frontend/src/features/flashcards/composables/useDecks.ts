@@ -10,11 +10,11 @@ export function useDecks() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  async function fetchDecks(page = 1) {
+  async function fetchDecks(page = 1, perPage?: number) {
     loading.value = true
     error.value = null
     try {
-      const result = await deckService.list(page)
+      const result = await deckService.list(page, perPage)
       decks.value = result.data
       meta.value = result.meta ?? null
     } catch (e) {

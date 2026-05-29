@@ -7,6 +7,12 @@ import { formatRelativeDate } from '@/shared/utils'
 import type { Deck } from '../types'
 import type { DeckStats } from '@/features/study/types'
 
+const LANGUAGE_PAIR_LABELS: Record<string, string> = {
+  de_to_en: 'DE → EN',
+  de_to_fa: 'DE → FA',
+  en_to_fa: 'EN → FA',
+}
+
 interface Props {
   deck: Deck
   variant?: 'library' | 'dashboard'
@@ -102,6 +108,23 @@ const masteryPercent = computed(() => {
         <h3 class="text-sm font-semibold text-gray-900 truncate">
           {{ deck.name }}
         </h3>
+        <div
+          v-if="deck.level || deck.language_pair"
+          class="mt-1.5 flex items-center gap-1.5 flex-wrap"
+        >
+          <span
+            v-if="deck.level"
+            class="text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded"
+          >
+            {{ deck.level }}
+          </span>
+          <span
+            v-if="deck.language_pair && LANGUAGE_PAIR_LABELS[deck.language_pair]"
+            class="text-xs font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
+          >
+            {{ LANGUAGE_PAIR_LABELS[deck.language_pair] }}
+          </span>
+        </div>
         <p
           v-if="deck.description"
           class="mt-1 text-xs text-gray-500 line-clamp-2"
@@ -109,7 +132,7 @@ const masteryPercent = computed(() => {
           {{ deck.description }}
         </p>
         <p class="mt-2 text-xs text-gray-400">
-          {{ formatRelativeDate(deck.created_at) }}
+          {{ deck.flashcard_count }} cards · {{ formatRelativeDate(deck.created_at) }}
         </p>
       </div>
 
