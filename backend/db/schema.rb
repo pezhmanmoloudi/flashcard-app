@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_29_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_29_100006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -30,16 +30,33 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_29_000001) do
   end
 
   create_table "decks", force: :cascade do |t|
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.string "name", null: false
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_system", default: false, null: false
+    t.string "level"
+    t.string "language_pair"
+    t.integer "position", default: 0, null: false
+    t.index ["is_system"], name: "index_decks_on_is_system"
+    t.index ["language_pair"], name: "index_decks_on_language_pair"
+    t.index ["level"], name: "index_decks_on_level"
     t.index ["user_id"], name: "index_decks_on_user_id"
   end
 
-  create_table "flashcards", force: :cascade do |t|
+  create_table "flashcard_sets", force: :cascade do |t|
     t.bigint "deck_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deck_id", "position"], name: "index_flashcard_sets_on_deck_id_and_position"
+    t.index ["deck_id"], name: "index_flashcard_sets_on_deck_id"
+  end
+
+  create_table "flashcards", force: :cascade do |t|
     t.string "front_text", null: false
     t.string "back_text", null: false
     t.string "source_language", null: false
@@ -51,7 +68,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_29_000001) do
     t.datetime "updated_at", null: false
     t.text "translated_sentence"
     t.text "grammar_notes"
-    t.index ["deck_id"], name: "index_flashcards_on_deck_id"
+    t.bigint "flashcard_set_id", null: false
+    t.index ["flashcard_set_id"], name: "index_flashcards_on_flashcard_set_id"
   end
 
   create_table "quiz_questions", force: :cascade do |t|
@@ -106,8 +124,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_29_000001) do
 
   add_foreign_key "card_progresses", "flashcards"
   add_foreign_key "card_progresses", "users"
-  add_foreign_key "decks", "users"
-  add_foreign_key "flashcards", "decks"
+  add_foreign_key "decks", "users", on_delete: :cascade
+  add_foreign_key "flashcard_sets", "decks", on_delete: :cascade
+  add_foreign_key "flashcards", "flashcard_sets", on_delete: :cascade
   add_foreign_key "quiz_questions", "flashcards"
   add_foreign_key "quiz_questions", "quiz_sessions"
   add_foreign_key "quiz_sessions", "decks"

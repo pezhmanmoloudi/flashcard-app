@@ -20,9 +20,9 @@ export const flashcardService = {
     return data.data
   },
 
-  async create(deckId: number, params: FlashcardParams): Promise<Flashcard> {
+  async create(flashcardSetId: number, params: FlashcardParams): Promise<Flashcard> {
     const { data } = await apiClient.post<ApiResponse<Flashcard>>(
-      `/decks/${deckId}/flashcards`,
+      `/flashcard_sets/${flashcardSetId}/flashcards`,
       { flashcard: params },
     )
     return data.data

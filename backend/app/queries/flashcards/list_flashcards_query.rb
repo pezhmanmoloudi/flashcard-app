@@ -9,7 +9,7 @@ module Flashcards
     end
 
     def call
-      @deck.flashcards.ordered
+      @deck.flashcards.includes(:flashcard_set).ordered
     end
   end
 end

@@ -13,11 +13,13 @@ module Study
 
     def call
       Flashcard
-        .where(deck_id: @deck.id)
+        .joins(:flashcard_set)
+        .where(flashcard_sets: { deck_id: @deck.id })
         .joins(progress_join)
         .where("card_progresses.id IS NULL OR card_progresses.next_review_at <= ?", Time.current)
         .order(Arel.sql(order_clause))
         .limit(DAILY_LIMIT)
+        .includes(:flashcard_set)
     end
 
     private

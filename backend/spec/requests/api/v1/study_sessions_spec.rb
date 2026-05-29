@@ -61,16 +61,22 @@ RSpec.describe "StudySessions", type: :request do
   describe "PATCH /api/v1/study_sessions/:id" do
     let(:study_session) { create(:study_session, user: user, deck: deck) }
 
-    it "completes a study session" do
-      completed_time = Time.current.iso8601
-
+    it "updates cards_studied" do
       patch "/api/v1/study_sessions/#{study_session.id}",
-            params: { study_session: { cards_studied: 10, completed_at: completed_time } },
+            params: { study_session: { cards_studied: 10 } },
             headers: headers, as: :json
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["data"]["cards_studied"]).to eq(10)
-      expect(response.parsed_body["data"]["completed"]).to be(true)
+    end
+
+    it "ignores completed_at in update (must use /complete instead)" do
+      patch "/api/v1/study_sessions/#{study_session.id}",
+            params: { study_session: { cards_studied: 5, completed_at: Time.current.iso8601 } },
+            headers: headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["data"]["completed"]).to be(false)
     end
 
     it "returns not found for another user's session" do
@@ -79,6 +85,35 @@ RSpec.describe "StudySessions", type: :request do
       patch "/api/v1/study_sessions/#{other_session.id}",
             params: { study_session: { cards_studied: 5 } },
             headers: headers, as: :json
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe "POST /api/v1/study_sessions/:id/complete" do
+    let(:study_session) { create(:study_session, user: user, deck: deck) }
+
+    it "marks the session as completed" do
+      post "/api/v1/study_sessions/#{study_session.id}/complete", headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["data"]["completed"]).to be(true)
+      expect(response.parsed_body["data"]["completed_at"]).to be_present
+    end
+
+    it "is idempotent — completing twice returns ok" do
+      study_session.update!(completed_at: Time.current)
+
+      post "/api/v1/study_sessions/#{study_session.id}/complete", headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["data"]["completed"]).to be(true)
+    end
+
+    it "returns not found for another user's session" do
+      other_session = create(:study_session, user: create(:user), deck: create(:deck, user: create(:user)))
+
+      post "/api/v1/study_sessions/#{other_session.id}/complete", headers: headers
 
       expect(response).to have_http_status(:not_found)
     end

@@ -10,7 +10,7 @@ module Decks
     end
 
     def call
-      @user.decks.find(@id)
+      Deck.accessible_to(@user).find(@id)
     end
   end
 end

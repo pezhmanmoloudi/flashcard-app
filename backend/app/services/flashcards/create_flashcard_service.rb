@@ -1,12 +1,12 @@
 module Flashcards
   class CreateFlashcardService < ApplicationService
-    def initialize(deck:, params:)
-      @deck   = deck
-      @params = params
+    def initialize(flashcard_set:, params:)
+      @flashcard_set = flashcard_set
+      @params        = params
     end
 
     def call
-      flashcard = @deck.flashcards.build(@params)
+      flashcard = @flashcard_set.flashcards.build(@params)
       return Failure(flashcard.errors.full_messages) unless flashcard.save
 
       Success(flashcard)

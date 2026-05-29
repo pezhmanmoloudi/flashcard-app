@@ -24,11 +24,11 @@ export function useFlashcards() {
     }
   }
 
-  async function createFlashcard(deckId: number, params: FlashcardParams): Promise<Flashcard | null> {
+  async function createFlashcard(flashcardSetId: number, params: FlashcardParams): Promise<Flashcard | null> {
     loading.value = true
     error.value = null
     try {
-      const flashcard = await flashcardService.create(deckId, params)
+      const flashcard = await flashcardService.create(flashcardSetId, params)
       flashcards.value.unshift(flashcard)
       return flashcard
     } catch (e) {

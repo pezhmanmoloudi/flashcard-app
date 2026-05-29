@@ -57,6 +57,8 @@ function handleMediaUpdated(updated: Flashcard) {
           source_language: flashcard.source_language,
           target_language: flashcard.target_language,
           example_sentence: flashcard.example_sentence,
+          translated_sentence: flashcard.translated_sentence,
+          grammar_notes: flashcard.grammar_notes,
         }"
         :loading="loading"
         :error="loading ? null : error"

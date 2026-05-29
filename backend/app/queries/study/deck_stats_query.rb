@@ -39,8 +39,8 @@ module Study
     private
 
     def user_progresses
-      CardProgress.joins(:flashcard)
-                  .where(flashcards: { deck_id: @deck.id }, user: @user)
+      CardProgress.joins(flashcard: { flashcard_set: :deck })
+                  .where(decks: { id: @deck.id }, user: @user)
     end
   end
 end

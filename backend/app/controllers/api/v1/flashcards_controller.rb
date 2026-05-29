@@ -4,9 +4,9 @@ module Api
       include Authenticatable
       include Paginatable
 
-      before_action :set_deck,         only: [:index, :create]
-      before_action :set_deck_by_id,   only: [:due]
-      before_action :set_flashcard,    only: [:show, :update, :destroy]
+      before_action :set_deck,          only: [:index, :due]
+      before_action :set_flashcard_set, only: [:create]
+      before_action :set_flashcard,     only: [:show, :update, :destroy]
 
       def index
         pagy, flashcards = paginate(Flashcards::ListFlashcardsQuery.call(deck: @deck))
@@ -23,7 +23,10 @@ module Api
       end
 
       def create
-        result = Flashcards::CreateFlashcardService.call(deck: @deck, params: flashcard_params)
+        result = Flashcards::CreateFlashcardService.call(
+          flashcard_set: @flashcard_set,
+          params:        flashcard_params
+        )
 
         if result.success?
           render_created(Api::V1::FlashcardSerializer.call(result.value!))
@@ -53,8 +56,10 @@ module Api
         @deck = Decks::FindDeckQuery.call(user: current_user, id: params[:deck_id])
       end
 
-      def set_deck_by_id
-        @deck = Decks::FindDeckQuery.call(user: current_user, id: params[:id])
+      def set_flashcard_set
+        @flashcard_set = FlashcardSet.joins(:deck)
+                                     .where("decks.user_id = ? OR decks.is_system = ?", current_user.id, true)
+                                     .find(params[:flashcard_set_id])
       end
 
       def set_flashcard
