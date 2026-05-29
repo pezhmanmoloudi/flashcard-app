@@ -5,6 +5,7 @@ module Api
         {
           id:                  @resource.id,
           flashcard_set_id:    @resource.flashcard_set_id,
+          deck_id:             @resource.flashcard_set.deck_id,
           front_text:          @resource.front_text,
           back_text:           @resource.back_text,
           source_language:     @resource.source_language,

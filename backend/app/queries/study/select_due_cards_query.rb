@@ -19,6 +19,7 @@ module Study
         .where("card_progresses.id IS NULL OR card_progresses.next_review_at <= ?", Time.current)
         .order(Arel.sql(order_clause))
         .limit(DAILY_LIMIT)
+        .includes(:flashcard_set)
     end
 
     private

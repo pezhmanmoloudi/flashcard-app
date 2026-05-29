@@ -9,6 +9,7 @@ module Decks
       deck = @user.decks.build(@params)
       return Failure(deck.errors.full_messages) unless deck.save
 
+      deck.flashcard_sets.create!(name: "Set 1", position: 0)
       Success(deck)
     end
   end
