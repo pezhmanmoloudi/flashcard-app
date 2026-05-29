@@ -57,11 +57,9 @@ module Api
       end
 
       def set_flashcard_set
-        deck = Decks::FindDeckQuery.call(user: current_user, id: params[:deck_id])
-        @flashcard_set = FlashcardSets::FindFlashcardSetQuery.call(
-          deck: deck,
-          id:   params[:flashcard_set_id]
-        )
+        @flashcard_set = FlashcardSet.joins(:deck)
+                                     .where("decks.user_id = ? OR decks.is_system = ?", current_user.id, true)
+                                     .find(params[:flashcard_set_id])
       end
 
       def set_flashcard

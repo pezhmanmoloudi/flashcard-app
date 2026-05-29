@@ -1,4 +1,4 @@
-set = Deck.find_by!(name: "Freizeit", is_system: true)
+set = Deck.find_by!(name: "Freizeit", is_system: true, language_pair: "de_to_fa")
           .flashcard_sets
           .find_or_create_by!(name: "Set 1 – Hobbies & Sports") { |s| s.position = 0 }
 

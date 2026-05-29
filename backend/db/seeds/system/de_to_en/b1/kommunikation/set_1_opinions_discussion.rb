@@ -1,4 +1,4 @@
-set = Deck.find_by!(name: "Kommunikation", is_system: true)
+set = Deck.find_by!(name: "Kommunikation", is_system: true, language_pair: "de_to_en")
           .flashcard_sets
           .find_or_create_by!(name: "Set 1 – Opinions & Discussion") { |s| s.position = 0 }
 
