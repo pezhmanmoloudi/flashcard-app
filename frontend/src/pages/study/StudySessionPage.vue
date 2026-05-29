@@ -58,26 +58,34 @@ onMounted(() => {
   <div class="max-w-lg mx-auto">
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">Study</h1>
-      <p class="mt-0.5 text-sm text-gray-500">Your cards due for review</p>
+      <h1 class="text-2xl font-bold text-[var(--color-text)]">
+        Study
+      </h1>
+      <p class="mt-0.5 text-sm text-[var(--color-text-muted)]">
+        Cards due for review today
+      </p>
     </div>
 
     <!-- Stats row -->
     <div
       v-if="userStats"
-      class="flex gap-6 mb-8"
+      class="grid grid-cols-3 gap-3 mb-8"
     >
-      <div class="flex flex-col">
-        <span class="text-xl font-bold text-gray-900 tabular-nums">{{ userStats.study_streak }}</span>
-        <span class="text-xs text-gray-400 mt-0.5">day streak</span>
-      </div>
-      <div class="flex flex-col">
-        <span class="text-xl font-bold text-gray-900 tabular-nums">{{ userStats.cards_mastered }}</span>
-        <span class="text-xs text-gray-400 mt-0.5">mastered</span>
-      </div>
-      <div class="flex flex-col">
-        <span class="text-xl font-bold text-gray-900 tabular-nums">{{ userStats.total_sessions }}</span>
-        <span class="text-xs text-gray-400 mt-0.5">sessions</span>
+      <div
+        v-for="stat in [
+          { label: 'Day streak', value: userStats.study_streak },
+          { label: 'Mastered', value: userStats.cards_mastered },
+          { label: 'Sessions', value: userStats.total_sessions },
+        ]"
+        :key="stat.label"
+        class="rounded-[var(--radius-card)] bg-[var(--color-surface-alt)] px-3 py-3 text-center"
+      >
+        <p class="text-xl font-semibold tabular-nums text-[var(--color-text)]">
+          {{ stat.value }}
+        </p>
+        <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
+          {{ stat.label }}
+        </p>
       </div>
     </div>
 
@@ -101,75 +109,91 @@ onMounted(() => {
       v-else-if="queue.length === 0"
       class="flex flex-col items-center justify-center py-20 text-center"
     >
-      <div class="text-4xl mb-4">✓</div>
-      <h2 class="text-lg font-semibold text-gray-900">All caught up</h2>
-      <p class="mt-1 text-sm text-gray-500 max-w-xs">
-        No cards are due right now. Come back later or add new cards in the Library.
+      <div class="w-16 h-16 rounded-full bg-[var(--color-surface-alt)] flex items-center justify-center mb-4">
+        <svg
+          class="w-7 h-7 text-[var(--color-text-muted)]"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h2 class="text-base font-semibold text-[var(--color-text)]">
+        All caught up
+      </h2>
+      <p class="mt-1 text-sm text-[var(--color-text-muted)] max-w-xs">
+        No cards are due right now. Come back later or study new cards in the Library.
       </p>
     </div>
 
     <!-- Review queue -->
     <div
       v-else
-      class="space-y-5"
+      class="space-y-4"
     >
+      <p class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">
+        Due for review
+      </p>
+
       <div
         v-for="deck in queue"
         :key="deck.id"
-        class="rounded-xl border border-gray-200 bg-white overflow-hidden"
+        class="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white overflow-hidden"
       >
         <!-- Deck header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-surface-alt)]">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="text-sm font-semibold text-gray-900 truncate">{{ deck.name }}</span>
-            <span class="shrink-0 text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+            <span class="text-sm font-semibold text-[var(--color-text)] truncate">{{ deck.name }}</span>
+            <span
+              v-if="deck.level"
+              class="shrink-0 text-xs font-medium text-[var(--color-text-muted)] bg-white border border-[var(--color-border)] px-1.5 py-0.5 rounded"
+            >
               {{ deck.level }}
             </span>
             <span
               v-if="LANGUAGE_PAIR_LABELS[deck.language_pair]"
-              class="shrink-0 text-xs font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
+              class="shrink-0 text-xs font-medium text-[var(--color-primary)] bg-[var(--color-primary-light)] px-1.5 py-0.5 rounded"
             >
               {{ LANGUAGE_PAIR_LABELS[deck.language_pair] }}
             </span>
           </div>
-          <div class="flex items-center gap-2 shrink-0 ml-3">
-            <span class="text-xs text-gray-400">{{ deck.total_due }} due</span>
+          <div class="flex items-center gap-3 shrink-0 ml-3">
+            <span class="text-xs text-[var(--color-text-muted)] tabular-nums">{{ deck.total_due }} due</span>
             <button
-              class="text-xs font-medium text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-md transition-colors"
+              class="text-xs font-semibold text-[var(--color-primary)] hover:opacity-75 transition-opacity"
               @click="studyDeck(deck.id)"
             >
-              Study all
+              Review all →
             </button>
           </div>
         </div>
 
         <!-- Sets -->
-        <div class="divide-y divide-gray-100">
+        <div class="divide-y divide-[var(--color-border)]">
           <button
             v-for="set in deck.flashcard_sets"
             :key="set.id"
-            class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors text-left"
+            class="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--color-surface-alt)] active:bg-gray-100 transition-colors text-left"
             @click="studySet(deck.id, set.id)"
           >
-            <span class="text-sm text-gray-700 truncate pr-4">{{ set.name }}</span>
+            <span class="text-sm text-[var(--color-text)] truncate pr-4">{{ set.name }}</span>
             <div class="flex items-center gap-2 shrink-0">
               <span
-                class="text-xs font-semibold text-white bg-gray-800 px-2 py-0.5 rounded-full tabular-nums"
+                class="text-xs font-semibold text-white bg-[var(--color-primary)] px-2 py-0.5 rounded-full tabular-nums"
               >
                 {{ set.due_count }}
               </span>
               <svg
-                class="w-3.5 h-3.5 text-gray-400"
+                class="w-3.5 h-3.5 text-[var(--color-text-muted)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
             </div>
           </button>

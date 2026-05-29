@@ -7,8 +7,16 @@ module Api
       before_action :set_flashcard_set, only: [:show, :update, :destroy]
 
       def index
-        sets = FlashcardSets::ListFlashcardSetsQuery.call(deck: @deck)
-        render_ok(Api::V1::FlashcardSetSerializer.collection(sets))
+        sets = FlashcardSets::ListFlashcardSetsQuery.call(deck: @deck).to_a
+        completed_ids = FlashcardSets::SetCompletionQuery.call(user: current_user, sets: sets)
+
+        data = sets.each_with_index.map do |set, idx|
+          is_completed = completed_ids.include?(set.id)
+          is_unlocked  = idx.zero? || completed_ids.include?(sets[idx - 1].id)
+          Api::V1::FlashcardSetSerializer.with_progress(set, is_completed: is_completed, is_unlocked: is_unlocked)
+        end
+
+        render_ok(data)
       end
 
       def show

@@ -7,6 +7,7 @@ import { useStudyFlow } from '@/features/study/composables/useStudyFlow'
 import { useCardFlip } from '@/features/study/composables/useCardFlip'
 import StudyCard from '@/features/study/components/StudyCard.vue'
 import StudyProgress from '@/features/study/components/StudyProgress.vue'
+import StudyComplete from '@/features/study/components/StudyComplete.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,13 +21,14 @@ const {
   total,
   loading,
   error,
+  completed,
+  cardsStudied,
   startStudy,
   rateCard,
 } = useStudyFlow()
 
 const { isFlipped, flip, reset: resetFlip } = useCardFlip()
 
-// Reset flip state when the session advances to the next card
 watch(currentIndex, () => resetFlip())
 
 function handleKeydown(e: KeyboardEvent) {
@@ -34,10 +36,9 @@ function handleKeydown(e: KeyboardEvent) {
   if (e.key === ' ' || e.key === 'Enter') {
     e.preventDefault()
     flip()
-  } else if (e.key === 'ArrowRight') {
-    rateCard('easy')
-  } else if (e.key === 'ArrowLeft') {
-    rateCard('again')
+  } else if (isFlipped.value) {
+    if (e.key === 'ArrowRight') rateCard('easy')
+    else if (e.key === 'ArrowLeft') rateCard('again')
   }
 }
 
@@ -49,11 +50,24 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
 })
+
+function handleDone() {
+  router.push({ name: ROUTE_NAMES.STUDY })
+}
+
+function handleAgain() {
+  resetFlip()
+  startStudy(deckId, setId, reviewsOnly)
+}
 </script>
 
 <template>
   <div class="flex flex-col max-w-sm mx-auto gap-4">
-    <div class="flex items-center justify-between">
+    <!-- Back nav — hidden when session is in completion state -->
+    <div
+      v-if="!completed"
+      class="flex items-center justify-between"
+    >
       <button
         class="text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200 -ml-2.5 px-2.5 py-1.5 rounded-lg transition-colors"
         @click="router.push({ name: ROUTE_NAMES.STUDY })"
@@ -62,6 +76,7 @@ onUnmounted(() => {
       </button>
     </div>
 
+    <!-- Loading -->
     <div
       v-if="loading"
       class="flex justify-center py-20"
@@ -69,12 +84,22 @@ onUnmounted(() => {
       <BaseSpinner size="lg" />
     </div>
 
+    <!-- Error -->
     <BaseAlert
       v-else-if="error"
       variant="error"
       :message="error"
     />
 
+    <!-- Completion screen -->
+    <StudyComplete
+      v-else-if="completed"
+      :cards-studied="cardsStudied"
+      @done="handleDone"
+      @again="handleAgain"
+    />
+
+    <!-- Active study -->
     <template v-else-if="currentCard">
       <StudyProgress
         :current="currentIndex"
@@ -88,6 +113,38 @@ onUnmounted(() => {
         @swipe-right="rateCard('easy')"
         @swipe-left="rateCard('again')"
       />
+
+      <!-- Rating buttons — visible tap targets after card flips -->
+      <Transition name="rating-fade">
+        <div
+          v-if="isFlipped"
+          class="flex gap-3"
+        >
+          <button
+            class="flex-1 py-3.5 rounded-[var(--radius-btn)] bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 active:bg-red-200 transition-colors"
+            @click="rateCard('again')"
+          >
+            Again
+          </button>
+          <button
+            class="flex-1 py-3.5 rounded-[var(--radius-btn)] bg-green-50 text-green-600 text-sm font-semibold hover:bg-green-100 active:bg-green-200 transition-colors"
+            @click="rateCard('easy')"
+          >
+            Know it
+          </button>
+        </div>
+      </Transition>
     </template>
   </div>
 </template>
+
+<style scoped>
+.rating-fade-enter-active,
+.rating-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+.rating-fade-enter-from,
+.rating-fade-leave-to {
+  opacity: 0;
+}
+</style>

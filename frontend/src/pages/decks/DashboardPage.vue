@@ -1,31 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ROUTE_NAMES } from '@/core/router/route-names'
+import { onMounted } from 'vue'
 import { BaseSpinner, BaseAlert } from '@/shared/components/ui'
 import { useDecks } from '@/features/flashcards/composables/useDecks'
-import { studyService } from '@/features/study/services/study.service'
-import DeckCard from '@/features/flashcards/components/DeckCard.vue'
-import type { DeckStats } from '@/features/study/types'
+import { useDeckStats } from '@/features/dashboard/composables/useDeckStats'
+import DashboardShell from '@/features/dashboard/DashboardShell.vue'
 
-const router = useRouter()
 const { decks, loading, error, fetchDecks } = useDecks()
-const statsMap = ref<Record<number, DeckStats>>({})
+const { statsMap, fetchAllStats } = useDeckStats()
 
 onMounted(async () => {
-  await fetchDecks()
-  if (decks.value.length === 0) {
-    router.replace({ name: ROUTE_NAMES.DECKS })
-    return
-  }
-  const results = await Promise.allSettled(
-    decks.value.map((deck) => studyService.fetchDeckStats(deck.id)),
-  )
-  results.forEach((result, i) => {
-    if (result.status === 'fulfilled') {
-      statsMap.value[decks.value[i].id] = result.value
-    }
-  })
+  await fetchDecks(1, 100)
+  await fetchAllStats(decks.value)
 })
 </script>
 
@@ -36,7 +21,7 @@ onMounted(async () => {
         Your Decks
       </h1>
       <p class="mt-1 text-sm text-[var(--color-text-muted)]">
-        Pick a deck and continue learning.
+        Pick a learning path and continue your studies.
       </p>
     </div>
 
@@ -53,18 +38,17 @@ onMounted(async () => {
       :message="error"
     />
 
-    <div
+    <DashboardShell
       v-else-if="decks.length > 0"
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-    >
-      <DeckCard
-        v-for="deck in decks"
-        :key="deck.id"
-        :deck="deck"
-        :stats="statsMap[deck.id] ?? null"
-        variant="dashboard"
-      />
-    </div>
+      :decks="decks"
+      :stats-map="statsMap"
+    />
 
+    <p
+      v-else
+      class="text-sm text-[var(--color-text-muted)] py-4"
+    >
+      No decks yet.
+    </p>
   </div>
 </template>
