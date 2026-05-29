@@ -11,7 +11,9 @@ module Decks
     def call
       Deck.accessible_to(@user)
           .includes(flashcard_sets: :flashcards)
-          .ordered
+          .order(Arel.sql(
+            "language_pair ASC NULLS LAST, level ASC NULLS LAST, position ASC, created_at DESC"
+          ))
     end
   end
 end

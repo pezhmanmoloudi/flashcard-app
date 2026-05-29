@@ -11,11 +11,9 @@ import {
 } from '@/shared/components/ui'
 import { useDeck } from '@/features/flashcards/composables/useDeck'
 import { useFlashcardSets } from '@/features/flashcards/composables/useFlashcardSets'
-import { useFlashcards } from '@/features/flashcards/composables/useFlashcards'
-import FlashcardCard from '@/features/flashcards/components/FlashcardCard.vue'
+import FlashcardSetCard from '@/features/flashcards/components/FlashcardSetCard.vue'
 import { useStats } from '@/features/study/composables/useStats'
 import { formatDate } from '@/shared/utils'
-import type { Flashcard } from '@/features/flashcards/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,24 +21,21 @@ const deckId = Number(route.params.id)
 
 const { deck, loading, error, fetchDeck, deleteDeck } = useDeck()
 const { deckStats, fetchDeckStats } = useStats()
-const { flashcardSets, fetchFlashcardSets } = useFlashcardSets()
-const { flashcards, loading: cardsLoading, destroyFlashcard, fetchFlashcards } = useFlashcards()
+const { flashcardSets, loading: setsLoading, fetchFlashcardSets } = useFlashcardSets()
 const confirmingDelete = ref(false)
 
-const cardsBySet = computed(() => {
-  const map: Record<number, Flashcard[]> = {}
-  for (const card of flashcards.value) {
-    if (!map[card.flashcard_set_id]) map[card.flashcard_set_id] = []
-    map[card.flashcard_set_id].push(card)
-  }
-  return map
-})
+const activeSet = computed(() =>
+  flashcardSets.value.find((s) => s.is_unlocked && !s.is_completed) ?? null,
+)
+
+const allCompleted = computed(
+  () => flashcardSets.value.length > 0 && flashcardSets.value.every((s) => s.is_completed),
+)
 
 onMounted(() => {
   fetchDeck(deckId)
   fetchDeckStats(deckId)
   fetchFlashcardSets(deckId)
-  fetchFlashcards(deckId, 1, 100)
 })
 
 async function handleDelete() {
@@ -53,6 +48,22 @@ function studySet(setId: number) {
     name: ROUTE_NAMES.STUDY_SESSION,
     params: { deckId },
     query: { setId },
+  })
+}
+
+function reviewSet(setId: number) {
+  router.push({
+    name: ROUTE_NAMES.STUDY_SESSION,
+    params: { deckId },
+    query: { setId, reviewsOnly: 'true' },
+  })
+}
+
+function reviewAll() {
+  router.push({
+    name: ROUTE_NAMES.STUDY_SESSION,
+    params: { deckId },
+    query: { reviewsOnly: 'true' },
   })
 }
 </script>
@@ -116,29 +127,24 @@ function studySet(setId: number) {
     />
 
     <template v-else-if="deck">
+      <!-- Deck meta -->
       <BaseCard
         v-if="deck.description"
         padding="md"
-        class="mb-8"
+        class="mb-6"
       >
-        <p class="text-sm text-gray-700">
+        <p class="text-sm text-[var(--color-text)]">
           {{ deck.description }}
         </p>
-        <p class="mt-2 text-xs text-gray-400">
+        <p class="mt-2 text-xs text-[var(--color-text-muted)]">
           Created {{ formatDate(deck.created_at) }}
         </p>
       </BaseCard>
-      <p
-        v-else
-        class="text-xs text-gray-400 mb-8"
-      >
-        Created {{ formatDate(deck.created_at) }}
-      </p>
 
       <!-- Stats row -->
       <div
         v-if="deckStats"
-        class="grid grid-cols-4 gap-3 mb-8"
+        class="grid grid-cols-4 gap-3 mb-6"
       >
         <div
           v-for="stat in [
@@ -148,72 +154,95 @@ function studySet(setId: number) {
             { label: 'Mastered', value: deckStats.mastered_count },
           ]"
           :key="stat.label"
-          class="rounded-[var(--radius-card)] bg-gray-50 px-3 py-3 text-center"
+          class="rounded-[var(--radius-card)] bg-[var(--color-surface-alt)] px-3 py-3 text-center"
         >
-          <p class="text-xl font-semibold text-gray-900">
+          <p class="text-xl font-semibold text-[var(--color-text)]">
             {{ stat.value }}
           </p>
-          <p class="text-xs text-gray-400 mt-0.5">
+          <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
             {{ stat.label }}
           </p>
         </div>
       </div>
 
-      <!-- Loading sets -->
+      <!-- Sets loading -->
       <div
-        v-if="cardsLoading && flashcardSets.length === 0"
+        v-if="setsLoading && flashcardSets.length === 0"
         class="flex justify-center py-10"
       >
         <BaseSpinner size="lg" />
       </div>
 
-      <!-- Flashcard sets -->
-      <div
-        v-else
-        class="space-y-8"
-      >
+      <template v-else-if="flashcardSets.length > 0">
+        <!-- Active set CTA -->
         <div
-          v-for="set in flashcardSets"
-          :key="set.id"
+          v-if="activeSet"
+          class="mb-6 rounded-[var(--radius-card)] border border-[var(--color-primary)] bg-[var(--color-primary-light)] px-5 py-4 flex items-center justify-between gap-4"
         >
-          <!-- Set header -->
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-              <h2 class="text-sm font-semibold text-gray-900">
-                {{ set.name }}
-              </h2>
-              <span class="text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-                {{ set.flashcard_count }} cards
-              </span>
-            </div>
-            <button
-              class="text-xs font-medium text-[var(--color-primary)] hover:opacity-75 transition-opacity"
-              @click="studySet(set.id)"
-            >
-              Study set →
-            </button>
+          <div class="min-w-0">
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-primary)] mb-1">
+              Continue Learning
+            </p>
+            <p class="text-sm font-semibold text-[var(--color-text)] truncate">
+              {{ activeSet.name }}
+            </p>
+            <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
+              {{ activeSet.flashcard_count }} {{ activeSet.flashcard_count === 1 ? 'card' : 'cards' }}
+            </p>
           </div>
-
-          <!-- Cards -->
-          <div
-            v-if="cardsBySet[set.id]?.length"
-            class="space-y-3"
+          <BaseButton
+            class="shrink-0"
+            @click="studySet(activeSet.id)"
           >
-            <FlashcardCard
-              v-for="card in cardsBySet[set.id]"
-              :key="card.id"
-              :flashcard="card"
-              @delete="(fc) => destroyFlashcard(fc.id)"
-            />
-          </div>
-          <p
-            v-else-if="!cardsLoading"
-            class="text-sm text-gray-400 py-2"
-          >
-            No flashcards in this set yet.
-          </p>
+            Start →
+          </BaseButton>
         </div>
-      </div>
+
+        <!-- All completed CTA -->
+        <div
+          v-else-if="allCompleted"
+          class="mb-6 rounded-[var(--radius-card)] border border-green-200 bg-green-50 px-5 py-4 flex items-center justify-between gap-4"
+        >
+          <div>
+            <p class="text-sm font-semibold text-green-700">
+              All sets completed!
+            </p>
+            <p class="text-xs text-green-600 mt-0.5">
+              Keep your cards fresh with daily reviews.
+            </p>
+          </div>
+          <BaseButton
+            variant="secondary"
+            class="shrink-0"
+            @click="reviewAll"
+          >
+            Review →
+          </BaseButton>
+        </div>
+
+        <!-- Set progression list -->
+        <div class="space-y-3">
+          <p class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-4">
+            {{ flashcardSets.length }} {{ flashcardSets.length === 1 ? 'Set' : 'Sets' }}
+          </p>
+
+          <FlashcardSetCard
+            v-for="(set, idx) in flashcardSets"
+            :key="set.id"
+            :set="set"
+            :set-number="idx + 1"
+            @study="studySet(set.id)"
+            @review="reviewSet(set.id)"
+          />
+        </div>
+      </template>
+
+      <p
+        v-else-if="!setsLoading"
+        class="text-sm text-[var(--color-text-muted)] py-4"
+      >
+        No sets in this deck yet.
+      </p>
     </template>
   </div>
 </template>

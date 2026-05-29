@@ -14,12 +14,29 @@ module Api
       end
 
       def due
-        flashcards = Study::SelectDueCardsQuery.call(
-          user:             current_user,
-          deck:             @deck,
-          flashcard_set_id: params[:flashcard_set_id].presence,
-          reviews_only:     params[:reviews_only] == "true"
-        )
+        flashcards = if params[:reviews_only] == "true"
+          # Review mode: serve due-for-review cards from any accessible set.
+          # Progression is not enforced here — users should be able to review
+          # all previously studied cards regardless of the current active set.
+          Study::SelectDueCardsQuery.call(
+            user:             current_user,
+            deck:             @deck,
+            flashcard_set_id: params[:flashcard_set_id].presence,
+            reviews_only:     true
+          )
+        else
+          # Learning mode: always restrict to the active set (first unlocked,
+          # not yet completed). Any client-supplied flashcard_set_id is ignored
+          # so that locked or future sets cannot be accessed early.
+          active_set = Study::ActiveSetQuery.call(user: current_user, deck: @deck)
+          active_set ? Study::SelectDueCardsQuery.call(
+            user:             current_user,
+            deck:             @deck,
+            flashcard_set_id: active_set.id,
+            reviews_only:     false
+          ) : []
+        end
+
         render json: { data: Api::V1::FlashcardSerializer.collection(flashcards) }, status: :ok
       end
 
