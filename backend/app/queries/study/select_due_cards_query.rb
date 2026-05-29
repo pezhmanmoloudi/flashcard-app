@@ -2,17 +2,18 @@ module Study
   class SelectDueCardsQuery
     DAILY_LIMIT = 20
 
-    def self.call(user:, deck:)
-      new(user: user, deck: deck).call
+    def self.call(user:, deck:, flashcard_set_id: nil)
+      new(user: user, deck: deck, flashcard_set_id: flashcard_set_id).call
     end
 
-    def initialize(user:, deck:)
-      @user = user
-      @deck = deck
+    def initialize(user:, deck:, flashcard_set_id: nil)
+      @user             = user
+      @deck             = deck
+      @flashcard_set_id = flashcard_set_id
     end
 
     def call
-      Flashcard
+      scope = Flashcard
         .joins(:flashcard_set)
         .where(flashcard_sets: { deck_id: @deck.id })
         .joins(progress_join)
@@ -20,6 +21,9 @@ module Study
         .order(Arel.sql(order_clause))
         .limit(DAILY_LIMIT)
         .includes(:flashcard_set)
+
+      scope = scope.where(flashcard_sets: { id: @flashcard_set_id }) if @flashcard_set_id.present?
+      scope
     end
 
     private

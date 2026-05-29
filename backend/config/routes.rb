@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       patch "profile/email",    to: "profiles#update_email"
       patch "profile/password", to: "profiles#update_password"
       get  "stats",        to: "stats#show"
+      get  "study/queue",  to: "study_queue#index"
 
       resources :decks do
         # Deck-level flashcard listing and due-cards — still accessible at deck scope

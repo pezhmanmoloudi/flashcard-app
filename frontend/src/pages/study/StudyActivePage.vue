@@ -11,6 +11,7 @@ import StudyProgress from '@/features/study/components/StudyProgress.vue'
 const route = useRoute()
 const router = useRouter()
 const deckId = Number(route.params.deckId)
+const setId = route.query.setId ? Number(route.query.setId) : undefined
 
 const {
   currentCard,
@@ -40,7 +41,7 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  startStudy(deckId)
+  startStudy(deckId, setId)
   window.addEventListener('keydown', handleKeydown)
 })
 

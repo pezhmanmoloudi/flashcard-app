@@ -45,3 +45,20 @@ export interface DeckStats {
   mastered_count: number
   learning_count: number
 }
+
+export interface ReviewQueueSet {
+  id: number
+  name: string
+  position: number
+  due_count: number
+}
+
+export interface ReviewQueueDeck {
+  id: number
+  name: string
+  description: string | null
+  level: string
+  language_pair: string
+  total_due: number
+  flashcard_sets: ReviewQueueSet[]
+}

@@ -16,7 +16,7 @@ export function useStudyFlow() {
   const currentCard = computed(() => cards.value[currentIndex.value] ?? null)
   const total = computed(() => cards.value.length)
 
-  async function startStudy(deckId: number) {
+  async function startStudy(deckId: number, setId?: number) {
     loading.value = true
     error.value = null
     completed.value = false
@@ -27,7 +27,7 @@ export function useStudyFlow() {
     try {
       const [sess, dueCards] = await Promise.all([
         studyService.startSession(deckId),
-        studyService.getDueCards(deckId),
+        studyService.getDueCards(deckId, setId),
       ])
       session.value = sess
       cards.value = dueCards

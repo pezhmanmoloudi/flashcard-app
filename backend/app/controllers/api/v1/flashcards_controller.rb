@@ -14,7 +14,11 @@ module Api
       end
 
       def due
-        flashcards = Study::SelectDueCardsQuery.call(user: current_user, deck: @deck)
+        flashcards = Study::SelectDueCardsQuery.call(
+          user:             current_user,
+          deck:             @deck,
+          flashcard_set_id: params[:flashcard_set_id].presence
+        )
         render json: { data: Api::V1::FlashcardSerializer.collection(flashcards) }, status: :ok
       end
 
