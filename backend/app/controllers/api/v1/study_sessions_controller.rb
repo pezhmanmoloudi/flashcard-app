@@ -5,7 +5,7 @@ module Api
       include Paginatable
 
       before_action :set_deck,          only: [:create]
-      before_action :set_study_session, only: [:update]
+      before_action :set_study_session, only: [:update, :complete]
 
       def index
         pagy, sessions = paginate(Study::ListStudySessionsQuery.call(user: current_user))
@@ -35,6 +35,16 @@ module Api
         end
       end
 
+      def complete
+        result = StudySessions::CompleteSessionService.call(study_session: @study_session)
+
+        if result.success?
+          render_ok(Api::V1::StudySessionSerializer.call(result.value!))
+        else
+          render_error(result.failure.join(", "))
+        end
+      end
+
       private
 
       def set_deck
@@ -46,7 +56,7 @@ module Api
       end
 
       def study_session_params
-        params.require(:study_session).permit(:cards_studied, :completed_at)
+        params.require(:study_session).permit(:cards_studied)
       end
     end
   end

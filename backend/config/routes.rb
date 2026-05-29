@@ -41,7 +41,10 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :study_sessions, only: [:index, :update]
+      resources :study_sessions, only: [:index, :update] do
+        resources :reviews, only: [:create], controller: "study_session_reviews"
+        post :complete, on: :member
+      end
       resources :quiz_sessions,  only: [:index, :show, :update]
       resources :quiz_questions, only: [] do
         post :answer, on: :member
