@@ -9,7 +9,9 @@ module Decks
     end
 
     def call
-      @user.decks.includes(:flashcards).ordered
+      Deck.accessible_to(@user)
+          .includes(flashcard_sets: :flashcards)
+          .ordered
     end
   end
 end

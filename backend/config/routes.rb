@@ -15,24 +15,36 @@ Rails.application.routes.draw do
       patch "profile/email",    to: "profiles#update_email"
       patch "profile/password", to: "profiles#update_password"
       get  "stats",        to: "stats#show"
+
       resources :decks do
-        resources :flashcards,     shallow: true
-        resources :study_sessions, only: [:create]
-        resources :quiz_sessions,  only: [:create]
+        # Deck-level flashcard listing and due-cards — still accessible at deck scope
+        resources :flashcards, only: [:index], shallow: false
         get :due_flashcards, to: "flashcards#due", on: :member
         get :stats,          to: "decks#stats",    on: :member
+
+        resources :study_sessions, only: [:create]
+        resources :quiz_sessions,  only: [:create]
+
+        # FlashcardSets are always scoped to a deck
+        resources :flashcard_sets, only: [:index, :create], shallow: false
+      end
+
+      # Shallow set/flashcard routes — no deck_id needed for member actions
+      resources :flashcard_sets, only: [:show, :update, :destroy] do
+        resources :flashcards, only: [:create], shallow: false
+      end
+
+      # Flashcard member actions — shallow (no deck or set nesting needed)
+      resources :flashcards, only: [:show, :update, :destroy] do
+        resource :progress, only: [:show, :create, :update], controller: "card_progresses" do
+          post :review, on: :member
+        end
       end
 
       resources :study_sessions, only: [:index, :update]
       resources :quiz_sessions,  only: [:index, :show, :update]
       resources :quiz_questions, only: [] do
         post :answer, on: :member
-      end
-
-      resources :flashcards, only: [] do
-        resource :progress, only: [:show, :create, :update], controller: "card_progresses" do
-          post :review, on: :member
-        end
       end
     end
   end

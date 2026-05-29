@@ -10,8 +10,8 @@ module Flashcards
     end
 
     def call
-      Flashcard.joins(:deck)
-               .where(decks: { user_id: @user.id })
+      Flashcard.joins(flashcard_set: :deck)
+               .where("decks.user_id = ? OR decks.is_system = ?", @user.id, true)
                .find(@id)
     end
   end

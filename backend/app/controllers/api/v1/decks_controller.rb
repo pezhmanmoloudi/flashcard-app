@@ -52,7 +52,7 @@ module Api
       end
 
       def deck_params
-        params.require(:deck).permit(:name, :description)
+        params.require(:deck).permit(:name, :description, :level, :language_pair, :position)
       end
     end
   end

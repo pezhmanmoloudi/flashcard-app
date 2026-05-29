@@ -1,5 +1,5 @@
-module Flashcards
-  class ListFlashcardsQuery
+module FlashcardSets
+  class ListFlashcardSetsQuery
     def self.call(deck:)
       new(deck: deck).call
     end
@@ -9,7 +9,7 @@ module Flashcards
     end
 
     def call
-      @deck.flashcards.includes(:flashcard_set).ordered
+      @deck.flashcard_sets.includes(:flashcards).ordered
     end
   end
 end
