@@ -11,7 +11,6 @@ export interface StudySession {
 
 export interface UpdateStudySessionParams {
   cards_studied?: number
-  completed_at?: string
 }
 
 export interface CardProgress {

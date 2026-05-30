@@ -34,9 +34,7 @@ export function useStudyFlow() {
 
       if (cards.value.length === 0) {
         completed.value = true
-        await studyService
-          .updateSession(sess.id, { cards_studied: 0, completed_at: new Date().toISOString() })
-          .catch(() => {})
+        await studyService.completeSession(sess.id).catch((e) => console.error('Failed to complete empty session:', e))
       }
     } catch (e) {
       error.value = extractError(e)
@@ -47,12 +45,13 @@ export function useStudyFlow() {
 
   async function rateCard(rating: StudyRating) {
     const card = currentCard.value
-    if (!card) return
+    if (!card || !session.value) return
 
     try {
-      await studyService.reviewCard(card.id, rating)
-    } catch {
-      // Progress update failed — continue the session
+      await studyService.reviewCardInSession(session.value.id, card.id, rating)
+    } catch (e) {
+      error.value = extractError(e)
+      return
     }
 
     cardsStudied.value++
@@ -60,13 +59,10 @@ export function useStudyFlow() {
     if (currentIndex.value < cards.value.length - 1) {
       currentIndex.value++
     } else {
-      if (session.value) {
-        await studyService
-          .updateSession(session.value.id, {
-            cards_studied: cardsStudied.value,
-            completed_at: new Date().toISOString(),
-          })
-          .catch(() => {})
+      try {
+        await studyService.completeSession(session.value.id)
+      } catch (e) {
+        console.error('Failed to complete session:', e)
       }
       completed.value = true
     }

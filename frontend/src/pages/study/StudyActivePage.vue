@@ -51,8 +51,16 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
 })
 
+function goBack() {
+  if (window.history.state?.back) {
+    router.back()
+  } else {
+    router.push({ name: ROUTE_NAMES.DECK_SHOW, params: { id: deckId } })
+  }
+}
+
 function handleDone() {
-  router.push({ name: ROUTE_NAMES.STUDY })
+  goBack()
 }
 
 function handleAgain() {
@@ -70,7 +78,7 @@ function handleAgain() {
     >
       <button
         class="text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200 -ml-2.5 px-2.5 py-1.5 rounded-lg transition-colors"
-        @click="router.push({ name: ROUTE_NAMES.STUDY })"
+        @click="goBack()"
       >
         ← Back
       </button>
