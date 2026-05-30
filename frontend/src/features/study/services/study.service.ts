@@ -49,9 +49,28 @@ export const studyService = {
   },
 
   async updateSession(id: number, params: UpdateStudySessionParams): Promise<StudySession> {
-    const { data } = await apiClient.put<ApiResponse<StudySession>>(
+    const { data } = await apiClient.patch<ApiResponse<StudySession>>(
       `/study_sessions/${id}`,
       { study_session: params },
+    )
+    return data.data
+  },
+
+  async reviewCardInSession(
+    sessionId: number,
+    flashcardId: number,
+    rating: StudyRating,
+  ): Promise<CardProgress> {
+    const { data } = await apiClient.post<ApiResponse<CardProgress>>(
+      `/study_sessions/${sessionId}/reviews`,
+      { flashcard_id: flashcardId, result: rating },
+    )
+    return data.data
+  },
+
+  async completeSession(sessionId: number): Promise<StudySession> {
+    const { data } = await apiClient.post<ApiResponse<StudySession>>(
+      `/study_sessions/${sessionId}/complete`,
     )
     return data.data
   },

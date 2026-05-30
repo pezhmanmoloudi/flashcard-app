@@ -1,8 +1,8 @@
 module StudySessions
   class RecordReviewService < ApplicationService
-    # Maps the two-state swipe UX to SM-2 quality scores.
-    # known → 4 (correct with hesitation), again → 1 (wrong but answer felt familiar)
-    RESULT_TO_QUALITY = { "known" => 4, "again" => 1 }.freeze
+    # Maps rating values to SM-2 quality scores.
+    # Supports both legacy 2-level (known/again) and current 4-level (easy/good/hard/again) UI.
+    RESULT_TO_QUALITY = { "known" => 4, "again" => 1, "hard" => 3, "good" => 4, "easy" => 5 }.freeze
 
     def initialize(study_session:, flashcard_id:, result:)
       @study_session = study_session

@@ -20,8 +20,7 @@ module FlashcardSets
         .joins(
           "LEFT JOIN card_progresses cp " \
           "ON cp.flashcard_id = flashcards.id " \
-          "AND cp.user_id = #{@user.id.to_i} " \
-          "AND cp.repetitions >= 1"
+          "AND cp.user_id = #{@user.id.to_i}"
         )
         .where(id: @sets.map(&:id))
         .group("flashcard_sets.id")
