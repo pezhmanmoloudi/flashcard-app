@@ -21,7 +21,9 @@ module Study
           uid: @user.id, sys: true
         )
         .where(
-          "card_progresses.id IS NOT NULL AND card_progresses.next_review_at <= :now",
+          "card_progresses.id IS NOT NULL " \
+          "AND card_progresses.next_review_at <= :now " \
+          "AND card_progresses.needs_review = false",
           now: Time.current
         )
         .group(

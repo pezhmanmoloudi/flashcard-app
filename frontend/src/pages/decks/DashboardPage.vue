@@ -2,16 +2,11 @@
 import { onMounted } from 'vue'
 import { BaseSpinner, BaseAlert } from '@/shared/components/ui'
 import { useDecks } from '@/features/flashcards/composables/useDecks'
-import { useDeckStats } from '@/features/dashboard/composables/useDeckStats'
 import DashboardShell from '@/features/dashboard/DashboardShell.vue'
 
 const { decks, loading, error, fetchDecks } = useDecks()
-const { statsMap, fetchAllStats } = useDeckStats()
 
-onMounted(async () => {
-  await fetchDecks(1, 100)
-  await fetchAllStats(decks.value)
-})
+onMounted(() => fetchDecks(1, 100))
 </script>
 
 <template>
@@ -25,10 +20,7 @@ onMounted(async () => {
       </p>
     </div>
 
-    <div
-      v-if="loading"
-      class="flex justify-center py-20"
-    >
+    <div v-if="loading" class="flex justify-center py-20">
       <BaseSpinner size="lg" />
     </div>
 
@@ -41,7 +33,6 @@ onMounted(async () => {
     <DashboardShell
       v-else-if="decks.length > 0"
       :decks="decks"
-      :stats-map="statsMap"
     />
 
     <p

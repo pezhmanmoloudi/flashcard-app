@@ -73,33 +73,30 @@ function showLockedMessage() {
 
 <template>
   <!-- Dashboard variant: study-focused with progression states -->
-  <div
+  <button
     v-if="variant === 'dashboard'"
-    class="flex flex-col gap-4 rounded-2xl border p-5 transition-shadow duration-200 cursor-pointer"
+    class="aspect-square w-[calc(50%-8px)] rounded-2xl border-2 flex flex-col justify-between p-4 text-left transition-transform"
     :class="
       isLocked
-        ? 'bg-stone-50 border-stone-100'
+        ? 'border-[var(--color-border)] bg-[var(--color-surface-alt)] cursor-default'
         : isCompleted
-          ? 'bg-emerald-50 border-emerald-100 shadow-sm'
-          : 'bg-white border-stone-200 shadow-sm hover:shadow-md'
+          ? 'border-emerald-400 bg-emerald-50 active:scale-95 cursor-pointer'
+          : 'border-[var(--color-primary)] bg-white active:scale-95 cursor-pointer'
     "
     @click="handleDashboardClick"
   >
-    <div class="flex items-start justify-between gap-2">
-      <div class="flex-1 min-w-0">
-        <h3
-          class="text-base font-semibold truncate"
-          :class="isLocked ? 'text-stone-400' : 'text-[var(--color-text)]'"
-        >
-          {{ deck.name }}
-        </h3>
-        <p
-          v-if="deck.description && !isLocked"
-          class="mt-1 text-sm text-[var(--color-text-muted)] line-clamp-2 leading-relaxed"
-        >
-          {{ deck.description }}
-        </p>
-      </div>
+    <!-- Top row: count + status icon -->
+    <div class="flex items-start justify-between">
+      <span
+        class="text-4xl font-bold tabular-nums"
+        :class="
+          isLocked ? 'text-gray-300'
+          : isCompleted ? 'text-emerald-500'
+          : 'text-[var(--color-primary)]'
+        "
+      >
+        {{ deck.flashcard_count }}
+      </span>
 
       <!-- Lock icon -->
       <svg
@@ -107,76 +104,41 @@ function showLockedMessage() {
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"
         fill="currentColor"
-        class="w-4 h-4 text-gray-300 shrink-0 mt-0.5"
+        class="w-5 h-5 text-gray-300 mt-1"
       >
-        <path
-          fill-rule="evenodd"
-          d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z"
-          clip-rule="evenodd"
-        />
+        <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd" />
       </svg>
-
       <!-- Completed badge -->
       <span
         v-else-if="isCompleted"
-        class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0"
+        class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded mt-1"
       >
         Done
       </span>
     </div>
 
-    <!-- Progress line -->
-    <div
-      v-if="!isLocked"
-      class="flex items-center justify-between text-xs"
-      :class="isCompleted ? 'text-green-500' : 'text-[var(--color-text-muted)]'"
-    >
-      <span>{{ progressLabel }}</span>
-      <span v-if="stats && !isCompleted">{{ stats.due_count }} due</span>
+    <!-- Bottom: name + progress label -->
+    <div>
+      <p
+        class="text-sm font-semibold leading-snug"
+        :class="isLocked ? 'text-gray-400' : 'text-[var(--color-text)]'"
+      >
+        {{ deck.name }}
+      </p>
+      <p
+        class="text-xs mt-1"
+        :class="isLocked ? 'text-gray-300' : 'text-[var(--color-text-muted)]'"
+      >
+        {{ isLocked ? 'Locked' : progressLabel }}
+      </p>
+      <p
+        v-if="lockedMessage"
+        class="text-xs text-gray-400 mt-0.5"
+      >
+        Complete the previous deck first
+      </p>
     </div>
-
-    <!-- Progress bar -->
-    <div
-      v-if="!isLocked"
-      class="w-full h-1 rounded-full overflow-hidden"
-      :class="isCompleted ? 'bg-emerald-100' : 'bg-stone-100'"
-      role="progressbar"
-      :aria-valuenow="progressPercent"
-      aria-valuemin="0"
-      aria-valuemax="100"
-    >
-      <div
-        class="h-full rounded-full transition-all duration-500"
-        :class="isCompleted ? 'bg-emerald-400' : 'bg-sky-400'"
-        :style="{ width: `${progressPercent}%` }"
-      />
-    </div>
-
-    <!-- Action button -->
-    <BaseButton
-      v-if="!isLocked && !isCompleted"
-      class="w-full"
-      @click.stop="handleDashboardClick"
-    >
-      Study Now
-    </BaseButton>
-    <BaseButton
-      v-else-if="isCompleted"
-      variant="secondary"
-      class="w-full"
-      @click.stop="handleDashboardClick"
-    >
-      Review
-    </BaseButton>
-
-    <!-- Locked message -->
-    <p
-      v-if="lockedMessage"
-      class="text-xs text-center text-gray-400 -mt-1"
-    >
-      Complete the previous deck first
-    </p>
-  </div>
+  </button>
 
   <!-- Library variant: full management actions (unchanged) -->
   <BaseCard

@@ -23,7 +23,7 @@ defineProps<{
         </span>
         <div class="flex-1 h-px bg-stone-100" />
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="flex flex-wrap justify-center gap-4 max-w-xl mx-auto">
         <DeckCard
           v-for="deck in decksByLevel[level]"
           :key="deck.id"

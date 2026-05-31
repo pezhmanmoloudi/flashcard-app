@@ -10,6 +10,10 @@ import type {
   UserStats,
   DeckStats,
   ReviewQueueDeck,
+  InboxQueueDeck,
+  ReviewQueueSummaryItem,
+  ReviewSession,
+  ReviewCard,
 } from '../types'
 
 interface StudySessionListResponse {
@@ -23,10 +27,9 @@ export const studyService = {
     return data.data
   },
 
-  async getDueCards(deckId: number, setId?: number, reviewsOnly = false): Promise<Flashcard[]> {
+  async getDueCards(deckId: number, setId?: number): Promise<Flashcard[]> {
     const params: Record<string, unknown> = {}
     if (setId) params.flashcard_set_id = setId
-    if (reviewsOnly) params.reviews_only = 'true'
     const { data } = await apiClient.get<ApiResponse<Flashcard[]>>(
       `/decks/${deckId}/due_flashcards`,
       { params },
@@ -60,10 +63,11 @@ export const studyService = {
     sessionId: number,
     flashcardId: number,
     rating: StudyRating,
+    responseTimeMs?: number,
   ): Promise<CardProgress> {
     const { data } = await apiClient.post<ApiResponse<CardProgress>>(
       `/study_sessions/${sessionId}/reviews`,
-      { flashcard_id: flashcardId, result: rating },
+      { flashcard_id: flashcardId, result: rating, response_time_ms: responseTimeMs },
     )
     return data.data
   },
@@ -113,6 +117,56 @@ export const studyService = {
 
   async fetchDeckStats(deckId: number): Promise<DeckStats> {
     const { data } = await apiClient.get<ApiResponse<DeckStats>>(`/decks/${deckId}/stats`)
+    return data.data
+  },
+
+  async fetchInbox(): Promise<InboxQueueDeck[]> {
+    const { data } = await apiClient.get<ApiResponse<InboxQueueDeck[]>>('/study/inbox')
+    return data.data
+  },
+
+  // ── Review Queue (language-pair scoped) ──────────────────────────────────
+
+  async fetchReviewSummary(): Promise<ReviewQueueSummaryItem[]> {
+    const { data } = await apiClient.get<ApiResponse<ReviewQueueSummaryItem[]>>('/study/review')
+    return data.data
+  },
+
+  async startReviewSession(languagePair: string): Promise<ReviewSession> {
+    const { data } = await apiClient.post<ApiResponse<ReviewSession>>(
+      '/review_sessions',
+      { language_pair: languagePair },
+    )
+    return data.data
+  },
+
+  async getReviewCards(sessionId: number, includeWaiting = false): Promise<ReviewCard[]> {
+    const params: Record<string, string> = {}
+    if (includeWaiting) params.include_waiting = 'true'
+    const { data } = await apiClient.get<ApiResponse<ReviewCard[]>>(
+      `/review_sessions/${sessionId}/cards`,
+      { params },
+    )
+    return data.data
+  },
+
+  async reviewCardInReviewSession(
+    sessionId: number,
+    flashcardId: number,
+    rating: StudyRating,
+    responseTimeMs?: number,
+  ): Promise<CardProgress> {
+    const { data } = await apiClient.post<ApiResponse<CardProgress>>(
+      `/review_sessions/${sessionId}/reviews`,
+      { flashcard_id: flashcardId, result: rating, response_time_ms: responseTimeMs },
+    )
+    return data.data
+  },
+
+  async completeReviewSession(sessionId: number): Promise<ReviewSession> {
+    const { data } = await apiClient.post<ApiResponse<ReviewSession>>(
+      `/review_sessions/${sessionId}/complete`,
+    )
     return data.data
   },
 }

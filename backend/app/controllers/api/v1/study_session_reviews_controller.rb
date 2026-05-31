@@ -7,9 +7,10 @@ module Api
 
       def create
         result = StudySessions::RecordReviewService.call(
-          study_session: @study_session,
-          flashcard_id:  review_params[:flashcard_id],
-          result:        review_params[:result]
+          study_session:    @study_session,
+          flashcard_id:     review_params[:flashcard_id],
+          result:           review_params[:result],
+          response_time_ms: review_params[:response_time_ms]
         )
 
         if result.success?
@@ -26,7 +27,7 @@ module Api
       end
 
       def review_params
-        params.permit(:flashcard_id, :result)
+        params.permit(:flashcard_id, :result, :response_time_ms)
       end
     end
   end

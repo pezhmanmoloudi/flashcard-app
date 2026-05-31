@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_29_100006) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_31_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,9 +23,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_29_100006) do
     t.datetime "next_review_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "needs_review", default: false, null: false
+    t.datetime "reviewed_again_at"
+    t.integer "fail_streak", default: 0, null: false
+    t.integer "inbox_success_count", default: 0, null: false
+    t.datetime "reinforcement_due_at"
+    t.integer "last_response_time_ms"
     t.index ["flashcard_id"], name: "index_card_progresses_on_flashcard_id"
     t.index ["next_review_at"], name: "index_card_progresses_on_next_review_at"
+    t.index ["reinforcement_due_at"], name: "index_card_progresses_on_reinforcement_due_at"
     t.index ["user_id", "flashcard_id"], name: "index_card_progresses_on_user_id_and_flashcard_id", unique: true
+    t.index ["user_id", "needs_review"], name: "idx_card_progresses_inbox", where: "(needs_review = true)"
     t.index ["user_id"], name: "index_card_progresses_on_user_id"
   end
 
@@ -46,12 +54,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_29_100006) do
   end
 
   create_table "flashcard_sets", force: :cascade do |t|
-    t.bigint "deck_id", null: false
     t.string "name", null: false
     t.text "description"
     t.integer "position", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "deck_id", null: false
     t.index ["deck_id", "position"], name: "index_flashcard_sets_on_deck_id_and_position"
     t.index ["deck_id"], name: "index_flashcard_sets_on_deck_id"
   end
@@ -91,25 +99,37 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_29_100006) do
 
   create_table "quiz_sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.bigint "deck_id", null: false
     t.string "quiz_type", null: false
     t.integer "total_questions", default: 0, null: false
     t.integer "correct_answers", default: 0, null: false
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "deck_id", null: false
     t.index ["deck_id"], name: "index_quiz_sessions_on_deck_id"
     t.index ["user_id", "created_at"], name: "index_quiz_sessions_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_quiz_sessions_on_user_id"
   end
 
+  create_table "review_sessions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "cards_reviewed", default: 0, null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "language_pair", null: false
+    t.index ["user_id", "completed_at"], name: "index_review_sessions_on_user_id_and_completed_at"
+    t.index ["user_id", "language_pair"], name: "index_review_sessions_on_user_id_and_language_pair"
+    t.index ["user_id"], name: "index_review_sessions_on_user_id"
+  end
+
   create_table "study_sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.bigint "deck_id", null: false
     t.integer "cards_studied", default: 0, null: false
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "deck_id", null: false
     t.index ["deck_id"], name: "index_study_sessions_on_deck_id"
     t.index ["user_id"], name: "index_study_sessions_on_user_id"
   end
@@ -125,12 +145,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_29_100006) do
   add_foreign_key "card_progresses", "flashcards"
   add_foreign_key "card_progresses", "users"
   add_foreign_key "decks", "users", on_delete: :cascade
-  add_foreign_key "flashcard_sets", "decks", on_delete: :cascade
+  add_foreign_key "flashcard_sets", "decks"
   add_foreign_key "flashcards", "flashcard_sets", on_delete: :cascade
   add_foreign_key "quiz_questions", "flashcards"
   add_foreign_key "quiz_questions", "quiz_sessions"
   add_foreign_key "quiz_sessions", "decks"
   add_foreign_key "quiz_sessions", "users"
+  add_foreign_key "review_sessions", "users"
   add_foreign_key "study_sessions", "decks"
   add_foreign_key "study_sessions", "users"
 end
