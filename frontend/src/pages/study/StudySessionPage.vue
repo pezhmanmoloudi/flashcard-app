@@ -18,8 +18,9 @@ const error = ref<string | null>(null)
 const totalDue     = computed(() => reviewSummary.value.reduce((sum, r) => sum + r.total_due, 0))
 const totalWaiting = computed(() => reviewSummary.value.reduce((sum, r) => sum + r.inbox_waiting, 0))
 
-const dueItems     = computed(() => reviewSummary.value.filter(r => r.total_due > 0))
-const waitingItems = computed(() => reviewSummary.value.filter(r => r.inbox_waiting > 0))
+const allItems = computed(() =>
+  reviewSummary.value.filter(r => r.total_due + r.inbox_waiting > 0)
+)
 
 async function fetchSummary() {
   loading.value = true
@@ -133,93 +134,37 @@ onMounted(() => {
       </p>
     </div>
 
-    <!-- Review queue — sectioned layout -->
+    <!-- Review queue — one card per language pair -->
     <div
       v-else
-      class="space-y-6 max-w-xl mx-auto"
+      class="grid grid-cols-3 gap-3 max-w-xl mx-auto"
     >
-      <!-- Learning Insight: always-visible summary pills -->
-      <div class="flex items-center gap-2 flex-wrap">
-        <div
-          v-if="totalDue > 0"
-          class="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary-light)] px-3 py-1.5"
-        >
-          <span class="text-sm font-semibold tabular-nums text-[var(--color-primary)]">{{ totalDue }}</span>
-          <span class="text-xs text-[var(--color-primary)] opacity-70">due now</span>
+      <button
+        v-for="item in allItems"
+        :key="item.language_pair"
+        class="aspect-square w-full rounded-2xl border-2 border-[var(--color-primary)] bg-white p-4 flex flex-col justify-between text-left transition-transform active:scale-95"
+        @click="startReview(item.language_pair, true)"
+      >
+        <span class="text-4xl font-bold tabular-nums text-[var(--color-primary)]">
+          {{ item.total_due + item.inbox_waiting }}
+        </span>
+        <div>
+          <p class="text-sm font-semibold text-[var(--color-text)] leading-snug">
+            {{ LANGUAGE_PAIR_LABELS[item.language_pair] ?? item.language_pair }}
+          </p>
+          <p class="text-xs text-[var(--color-text-muted)] mt-1 tabular-nums">
+            <template v-if="item.total_due > 0 && item.inbox_waiting > 0">
+              {{ item.total_due }} due · {{ item.inbox_waiting }} recovering
+            </template>
+            <template v-else-if="item.total_due > 0">
+              {{ item.total_due }} due
+            </template>
+            <template v-else>
+              {{ item.inbox_waiting }} recovering
+            </template>
+          </p>
         </div>
-        <div
-          v-if="totalWaiting > 0"
-          class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5"
-        >
-          <span class="text-sm font-semibold tabular-nums text-amber-500">{{ totalWaiting }}</span>
-          <span class="text-xs text-amber-400">recovering</span>
-        </div>
-      </div>
-
-      <!-- Section A: Due Now -->
-      <div v-if="dueItems.length > 0">
-        <p
-          v-if="waitingItems.length > 0"
-          class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-3"
-        >
-          Due Now
-        </p>
-        <div class="grid grid-cols-3 gap-3">
-          <button
-            v-for="item in dueItems"
-            :key="item.language_pair"
-            class="aspect-square w-full rounded-2xl border-2 border-[var(--color-primary)] bg-white p-4 flex flex-col justify-between text-left transition-transform active:scale-95"
-            @click="startReview(item.language_pair)"
-          >
-            <span class="text-4xl font-bold tabular-nums text-[var(--color-primary)]">
-              {{ item.total_due }}
-            </span>
-            <div>
-              <p class="text-sm font-semibold text-[var(--color-text)] leading-snug">
-                {{ LANGUAGE_PAIR_LABELS[item.language_pair] ?? item.language_pair }}
-              </p>
-              <p class="text-xs text-[var(--color-text-muted)] mt-1 tabular-nums">
-                <template v-if="item.inbox_due > 0 && item.sm2_due > 0">
-                  {{ item.inbox_due }} recovering · {{ item.sm2_due }} scheduled
-                </template>
-                <template v-else-if="item.inbox_due > 0">
-                  {{ item.inbox_due }} recovering
-                </template>
-                <template v-else>
-                  {{ item.sm2_due }} scheduled
-                </template>
-              </p>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- Section B: Recovering -->
-      <div v-if="waitingItems.length > 0">
-        <p class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-3">
-          Recovering
-        </p>
-        <div class="grid grid-cols-3 gap-3">
-          <button
-            v-for="item in waitingItems"
-            :key="item.language_pair"
-            class="aspect-square w-full rounded-2xl border border-amber-200 bg-amber-50 p-4 flex flex-col justify-between text-left transition-transform active:scale-95"
-            @click="startReview(item.language_pair, true)"
-          >
-            <span class="text-4xl font-bold tabular-nums text-amber-500">
-              {{ item.inbox_waiting }}
-            </span>
-            <div>
-              <p class="text-sm font-semibold text-amber-700 leading-snug">
-                {{ LANGUAGE_PAIR_LABELS[item.language_pair] ?? item.language_pair }}
-              </p>
-              <p class="text-xs text-amber-600 mt-1">
-                Back tomorrow
-              </p>
-            </div>
-          </button>
-        </div>
-      </div>
+      </button>
     </div>
   </div>
 </template>
