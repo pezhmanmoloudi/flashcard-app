@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Flashcard } from '@/features/flashcards/types'
+import type { ReviewCard } from '../types'
 import { useCardSwipe } from '../composables/useCardSwipe'
 import { getPlaceholderColor } from '../utils/placeholder'
 import WordAudio from './WordAudio.vue'
 
 interface Props {
-  flashcard: Flashcard
+  flashcard: Flashcard | ReviewCard
   isFlipped: boolean
 }
 

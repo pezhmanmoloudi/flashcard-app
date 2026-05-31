@@ -9,6 +9,12 @@ export const deckRoutes: RouteRecordRaw[] = [
     meta: { title: 'Dashboard' },
   },
   {
+    path: 'learn/:mode',
+    name: ROUTE_NAMES.LANGUAGE_PAIR_LEVELS,
+    component: () => import('@/pages/learn/LanguagePairLevelPage.vue'),
+    meta: { title: 'Choose Level' },
+  },
+  {
     path: 'decks',
     name: ROUTE_NAMES.DECKS,
     component: () => import('@/pages/decks/DeckListPage.vue'),

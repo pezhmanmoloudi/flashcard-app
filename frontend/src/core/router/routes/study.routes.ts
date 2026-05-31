@@ -9,6 +9,12 @@ export const studyRoutes: RouteRecordRaw[] = [
     meta: { title: 'Study' },
   },
   {
+    path: 'study/review/:languagePair',
+    name: ROUTE_NAMES.REVIEW_SESSION,
+    component: () => import('@/pages/study/StudyActivePage.vue'),
+    meta: { title: 'Review' },
+  },
+  {
     path: 'study/:deckId',
     name: ROUTE_NAMES.STUDY_SESSION,
     component: () => import('@/pages/study/StudyActivePage.vue'),

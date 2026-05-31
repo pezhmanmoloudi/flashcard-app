@@ -1,19 +1,17 @@
-module StudySessions
+module ReviewSessions
+  # Records a flashcard review inside a ReviewSession (language-pair scoped).
+  # Shares the same card-progress state machine as StudySessions::RecordReviewService
+  # but validates card accessibility by language_pair rather than deck_id.
   class RecordReviewService < ApplicationService
-    # Maps rating values to SM-2 quality scores.
-    # Supports both legacy 2-level (known/again) and current 4-level (easy/good/hard/again) UI.
     RESULT_TO_QUALITY = { "known" => 4, "again" => 1, "hard" => 3, "good" => 4, "easy" => 5 }.freeze
 
-    # Inbox reinforcement backoff: fail_streak → days until next inbox appearance.
-    # Tiers: Normal (1–2) → 1–2d | Hard (3–4) → 4–7d | Extreme (5+) → 14d
     REINFORCEMENT_SCHEDULE = { 1 => 1, 2 => 2, 3 => 4, 4 => 7 }.freeze
     MAX_DELAY_DAYS         = 14
     GRADUATION_THRESHOLD   = 3
-    # Minimum gap before a second consecutive "again" increments the fail streak.
     COOLDOWN_HOURS         = 1
 
-    def initialize(study_session:, flashcard_id:, result:, response_time_ms: nil)
-      @study_session    = study_session
+    def initialize(review_session:, flashcard_id:, result:, response_time_ms: nil)
+      @review_session   = review_session
       @flashcard_id     = flashcard_id
       @result           = result.to_s
       @response_time_ms = response_time_ms&.to_i
@@ -21,13 +19,13 @@ module StudySessions
 
     def call
       quality = RESULT_TO_QUALITY[@result]
-      return Failure(["Invalid result '#{@result}': must be 'known' or 'again'"]) unless quality
+      return Failure(["Invalid result '#{@result}'"]) unless quality
 
       flashcard = find_flashcard
-      return Failure(["Flashcard not found in this deck"]) unless flashcard
+      return Failure(["Flashcard not found"]) unless flashcard
 
       progress = CardProgress.find_or_initialize_by(
-        user:      @study_session.user,
+        user:      @review_session.user,
         flashcard: flashcard
       )
 
@@ -68,19 +66,17 @@ module StudySessions
         end
       end
 
-      # Unified scheduler: SM-2 next_review_at must not precede inbox reinforcement.
       if progress.reinforcement_due_at.present?
         progress.next_review_at = [sm2.next_review_at, progress.reinforcement_due_at].max
       end
 
-      # Record how quickly the user responded — used by the priority scheduler.
       progress.last_response_time_ms = @response_time_ms if @response_time_ms&.positive?
 
       saved = false
 
       ActiveRecord::Base.transaction do
         if progress.save
-          @study_session.increment!(:cards_studied)
+          @review_session.increment!(:cards_reviewed)
           saved = true
         else
           raise ActiveRecord::Rollback
@@ -101,9 +97,16 @@ module StudySessions
     end
 
     def find_flashcard
+      user = @review_session.user
       Flashcard
         .joins(flashcard_set: :deck)
-        .where(id: @flashcard_id, decks: { id: @study_session.deck_id })
+        .where(
+          "id = :fid AND decks.language_pair = :lp AND (decks.user_id = :uid OR decks.is_system = :sys)",
+          fid: @flashcard_id,
+          lp:  @review_session.language_pair,
+          uid: user.id,
+          sys: true
+        )
         .first
     end
   end

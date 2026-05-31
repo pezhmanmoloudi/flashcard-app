@@ -5,6 +5,7 @@ export const ROUTE_NAMES = {
 
   // Dashboard
   DASHBOARD: 'dashboard',
+  LANGUAGE_PAIR_LEVELS: 'learn.levels',
 
   // Decks & Flashcards
   DECKS: 'decks',
@@ -19,6 +20,7 @@ export const ROUTE_NAMES = {
   // Study
   STUDY: 'study',
   STUDY_SESSION: 'study.session',
+  REVIEW_SESSION: 'review.session',
 
   // Quizzes
   QUIZZES: 'quizzes',

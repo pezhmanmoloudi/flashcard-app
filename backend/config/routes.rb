@@ -3,7 +3,6 @@ require "sidekiq/web"
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Sidekiq web UI — restrict to authenticated admins once auth is in place
   mount Sidekiq::Web => "/sidekiq" if Rails.env.development?
 
   namespace :api do
@@ -16,9 +15,9 @@ Rails.application.routes.draw do
       patch "profile/password", to: "profiles#update_password"
       get  "stats",        to: "stats#show"
       get  "study/queue",  to: "study_queue#index"
+      get  "study/review", to: "review_sessions#summary"
 
       resources :decks do
-        # Deck-level flashcard listing and due-cards — still accessible at deck scope
         resources :flashcards, only: [:index], shallow: false
         get :due_flashcards, to: "flashcards#due", on: :member
         get :stats,          to: "decks#stats",    on: :member
@@ -26,7 +25,6 @@ Rails.application.routes.draw do
         resources :study_sessions, only: [:create]
         resources :quiz_sessions,  only: [:create]
 
-        # FlashcardSets are always scoped to a deck
         resources :flashcard_sets, only: [:index, :create], shallow: false
       end
 
@@ -40,6 +38,12 @@ Rails.application.routes.draw do
         resource :progress, only: [:show, :create, :update], controller: "card_progresses" do
           post :review, on: :member
         end
+      end
+
+      resources :review_sessions, only: [:create] do
+        get  :cards,   on: :member
+        post :reviews, on: :member, action: :create_review
+        post :complete, on: :member
       end
 
       resources :study_sessions, only: [:index, :update] do
