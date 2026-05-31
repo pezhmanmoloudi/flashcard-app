@@ -1,24 +1,31 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/core/router/route-names'
 import { BaseSpinner, BaseAlert } from '@/shared/components/ui'
 import { useStats } from '@/features/study/composables/useStats'
 import { studyService } from '@/features/study/services/study.service'
-import type { ReviewQueueDeck } from '@/features/study/types'
+import { useStudyRefreshStore } from '@/features/study/stores/useStudyRefreshStore'
+import type { ReviewQueueSummaryItem } from '@/features/study/types'
 
 const router = useRouter()
 const { userStats, fetchUserStats } = useStats()
 
-const queue = ref<ReviewQueueDeck[]>([])
+const reviewSummary = ref<ReviewQueueSummaryItem[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 
-async function fetchQueue() {
+const totalDue     = computed(() => reviewSummary.value.reduce((sum, r) => sum + r.total_due, 0))
+const totalWaiting = computed(() => reviewSummary.value.reduce((sum, r) => sum + r.inbox_waiting, 0))
+
+const dueItems     = computed(() => reviewSummary.value.filter(r => r.total_due > 0))
+const waitingItems = computed(() => reviewSummary.value.filter(r => r.inbox_waiting > 0))
+
+async function fetchSummary() {
   loading.value = true
   error.value = null
   try {
-    queue.value = await studyService.fetchReviewQueue()
+    reviewSummary.value = await studyService.fetchReviewSummary()
   } catch {
     error.value = 'Failed to load review queue.'
   } finally {
@@ -26,36 +33,33 @@ async function fetchQueue() {
   }
 }
 
-function studySet(deckId: number, setId: number) {
+function startReview(languagePair: string, includeWaiting = false) {
   router.push({
-    name: ROUTE_NAMES.STUDY_SESSION,
-    params: { deckId },
-    query: { setId, reviewsOnly: 'true' },
-  })
-}
-
-function studyDeck(deckId: number) {
-  router.push({
-    name: ROUTE_NAMES.STUDY_SESSION,
-    params: { deckId },
-    query: { reviewsOnly: 'true' },
+    name: ROUTE_NAMES.REVIEW_SESSION,
+    params: { languagePair },
+    query: includeWaiting ? { includeWaiting: 'true' } : {},
   })
 }
 
 const LANGUAGE_PAIR_LABELS: Record<string, string> = {
-  de_to_en: 'DE → EN',
-  de_to_fa: 'DE → FA',
-  en_to_fa: 'EN → FA',
+  de_to_en: 'German ↔ English',
+  de_to_fa: 'German ↔ Persian',
+  en_to_fa: 'English ↔ Persian',
 }
 
+const refreshStore = useStudyRefreshStore()
+watch(() => refreshStore.inboxVersion, () => {
+  fetchSummary()
+})
+
 onMounted(() => {
-  fetchQueue()
+  fetchSummary()
   fetchUserStats()
 })
 </script>
 
 <template>
-  <div class="max-w-lg mx-auto">
+  <div class="max-w-xl mx-auto">
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-[var(--color-text)]">
@@ -104,9 +108,9 @@ onMounted(() => {
       :message="error"
     />
 
-    <!-- All caught up -->
+    <!-- All caught up — nothing due and nothing recovering -->
     <div
-      v-else-if="queue.length === 0"
+      v-else-if="totalDue === 0 && totalWaiting === 0"
       class="flex flex-col items-center justify-center py-20 text-center"
     >
       <div class="w-16 h-16 rounded-full bg-[var(--color-surface-alt)] flex items-center justify-center mb-4">
@@ -129,72 +133,89 @@ onMounted(() => {
       </p>
     </div>
 
-    <!-- Review queue -->
+    <!-- Review queue — sectioned layout -->
     <div
       v-else
-      class="space-y-4"
+      class="space-y-6 max-w-xl mx-auto"
     >
-      <p class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">
-        Due for review
-      </p>
-
-      <div
-        v-for="deck in queue"
-        :key="deck.id"
-        class="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white overflow-hidden"
-      >
-        <!-- Deck header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-surface-alt)]">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="text-sm font-semibold text-[var(--color-text)] truncate">{{ deck.name }}</span>
-            <span
-              v-if="deck.level"
-              class="shrink-0 text-xs font-medium text-[var(--color-text-muted)] bg-white border border-[var(--color-border)] px-1.5 py-0.5 rounded"
-            >
-              {{ deck.level }}
-            </span>
-            <span
-              v-if="LANGUAGE_PAIR_LABELS[deck.language_pair]"
-              class="shrink-0 text-xs font-medium text-[var(--color-primary)] bg-[var(--color-primary-light)] px-1.5 py-0.5 rounded"
-            >
-              {{ LANGUAGE_PAIR_LABELS[deck.language_pair] }}
-            </span>
-          </div>
-          <div class="flex items-center gap-3 shrink-0 ml-3">
-            <span class="text-xs text-[var(--color-text-muted)] tabular-nums">{{ deck.total_due }} due</span>
-            <button
-              class="text-xs font-semibold text-[var(--color-primary)] hover:opacity-75 transition-opacity"
-              @click="studyDeck(deck.id)"
-            >
-              Review all →
-            </button>
-          </div>
+      <!-- Learning Insight: always-visible summary pills -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <div
+          v-if="totalDue > 0"
+          class="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary-light)] px-3 py-1.5"
+        >
+          <span class="text-sm font-semibold tabular-nums text-[var(--color-primary)]">{{ totalDue }}</span>
+          <span class="text-xs text-[var(--color-primary)] opacity-70">due now</span>
         </div>
+        <div
+          v-if="totalWaiting > 0"
+          class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5"
+        >
+          <span class="text-sm font-semibold tabular-nums text-amber-500">{{ totalWaiting }}</span>
+          <span class="text-xs text-amber-400">recovering</span>
+        </div>
+      </div>
 
-        <!-- Sets -->
-        <div class="divide-y divide-[var(--color-border)]">
+      <!-- Section A: Due Now -->
+      <div v-if="dueItems.length > 0">
+        <p
+          v-if="waitingItems.length > 0"
+          class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-3"
+        >
+          Due Now
+        </p>
+        <div class="grid grid-cols-3 gap-3">
           <button
-            v-for="set in deck.flashcard_sets"
-            :key="set.id"
-            class="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--color-surface-alt)] active:bg-gray-100 transition-colors text-left"
-            @click="studySet(deck.id, set.id)"
+            v-for="item in dueItems"
+            :key="item.language_pair"
+            class="aspect-square w-full rounded-2xl border-2 border-[var(--color-primary)] bg-white p-4 flex flex-col justify-between text-left transition-transform active:scale-95"
+            @click="startReview(item.language_pair)"
           >
-            <span class="text-sm text-[var(--color-text)] truncate pr-4">{{ set.name }}</span>
-            <div class="flex items-center gap-2 shrink-0">
-              <span
-                class="text-xs font-semibold text-white bg-[var(--color-primary)] px-2 py-0.5 rounded-full tabular-nums"
-              >
-                {{ set.due_count }}
-              </span>
-              <svg
-                class="w-3.5 h-3.5 text-[var(--color-text-muted)]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
+            <span class="text-4xl font-bold tabular-nums text-[var(--color-primary)]">
+              {{ item.total_due }}
+            </span>
+            <div>
+              <p class="text-sm font-semibold text-[var(--color-text)] leading-snug">
+                {{ LANGUAGE_PAIR_LABELS[item.language_pair] ?? item.language_pair }}
+              </p>
+              <p class="text-xs text-[var(--color-text-muted)] mt-1 tabular-nums">
+                <template v-if="item.inbox_due > 0 && item.sm2_due > 0">
+                  {{ item.inbox_due }} recovering · {{ item.sm2_due }} scheduled
+                </template>
+                <template v-else-if="item.inbox_due > 0">
+                  {{ item.inbox_due }} recovering
+                </template>
+                <template v-else>
+                  {{ item.sm2_due }} scheduled
+                </template>
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section B: Recovering -->
+      <div v-if="waitingItems.length > 0">
+        <p class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-3">
+          Recovering
+        </p>
+        <div class="grid grid-cols-3 gap-3">
+          <button
+            v-for="item in waitingItems"
+            :key="item.language_pair"
+            class="aspect-square w-full rounded-2xl border border-amber-200 bg-amber-50 p-4 flex flex-col justify-between text-left transition-transform active:scale-95"
+            @click="startReview(item.language_pair, true)"
+          >
+            <span class="text-4xl font-bold tabular-nums text-amber-500">
+              {{ item.inbox_waiting }}
+            </span>
+            <div>
+              <p class="text-sm font-semibold text-amber-700 leading-snug">
+                {{ LANGUAGE_PAIR_LABELS[item.language_pair] ?? item.language_pair }}
+              </p>
+              <p class="text-xs text-amber-600 mt-1">
+                Back tomorrow
+              </p>
             </div>
           </button>
         </div>
