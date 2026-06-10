@@ -5,6 +5,7 @@ import { ROUTE_NAMES } from '@/core/router/route-names'
 import { BasePageHeader, BaseSpinner, BaseAlert } from '@/shared/components/ui'
 import { useDeck } from '@/features/flashcards/composables/useDeck'
 import DeckForm from '@/features/flashcards/components/DeckForm.vue'
+import DeckFlashcards from '@/features/flashcards/components/DeckFlashcards.vue'
 import type { DeckParams } from '@/features/flashcards/types'
 
 const route = useRoute()
@@ -42,14 +43,22 @@ async function handleSubmit(params: DeckParams) {
       :message="error"
     />
 
-    <DeckForm
-      v-else-if="deck"
-      submit-label="Save Changes"
-      :initial-values="{ name: deck.name, description: deck.description }"
-      :loading="loading"
-      :error="loading ? null : error"
-      @submit="handleSubmit"
-      @cancel="router.push({ name: ROUTE_NAMES.DECK_SHOW, params: { id: deckId } })"
-    />
+    <template v-else-if="deck">
+      <DeckForm
+        submit-label="Save Changes"
+        :initial-values="{ name: deck.name, description: deck.description }"
+        :loading="loading"
+        :error="loading ? null : error"
+        @submit="handleSubmit"
+        @cancel="router.push({ name: ROUTE_NAMES.DECK_SHOW, params: { id: deckId } })"
+      />
+
+      <div class="mt-10 pt-6 border-t border-[var(--color-border)]">
+        <DeckFlashcards
+          :deck-id="deckId"
+          mode="edit"
+        />
+      </div>
+    </template>
   </div>
 </template>

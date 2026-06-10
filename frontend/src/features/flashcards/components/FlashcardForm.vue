@@ -15,6 +15,7 @@ interface Props {
   loading?: boolean
   error?: string | null
   submitLabel?: string
+  showActions?: boolean
 }
 
 const {
@@ -22,11 +23,13 @@ const {
   loading = false,
   error = null,
   submitLabel = 'Save',
+  showActions = true,
 } = defineProps<Props>()
 
 const emit = defineEmits<{
   submit: [params: FlashcardParams]
   cancel: []
+  change: [values: { front_text: string; back_text: string; source_language: string; target_language: string }]
 }>()
 
 const frontText = ref(initialValues?.front_text ?? '')
@@ -56,6 +59,15 @@ watch(
     }
   },
 )
+
+watch([frontText, backText, sourceLanguage, targetLanguage], () => {
+  emit('change', {
+    front_text:      frontText.value,
+    back_text:       backText.value,
+    source_language: sourceLanguage.value,
+    target_language: targetLanguage.value,
+  })
+})
 
 function validate(): boolean {
   frontTextError.value = null
@@ -177,7 +189,10 @@ function handleSubmit() {
       hint="Optional."
     />
 
-    <div class="flex items-center gap-3 pt-2">
+    <div
+      v-if="showActions"
+      class="flex items-center gap-3 pt-2"
+    >
       <BaseButton
         type="submit"
         :loading="loading"

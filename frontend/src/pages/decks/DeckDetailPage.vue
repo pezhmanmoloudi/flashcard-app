@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/core/router/route-names'
 import {
   BaseSpinner,
   BaseAlert,
+  BaseButton,
 } from '@/shared/components/ui'
 import { useDeck } from '@/features/flashcards/composables/useDeck'
 import { useFlashcardSets } from '@/features/flashcards/composables/useFlashcardSets'
 import FlashcardSetCard from '@/features/flashcards/components/FlashcardSetCard.vue'
+import DeckFlashcards from '@/features/flashcards/components/DeckFlashcards.vue'
 import { useStats } from '@/features/study/composables/useStats'
 
 const route = useRoute()
@@ -18,6 +20,8 @@ const deckId = Number(route.params.id)
 const { deck, loading, error, fetchDeck } = useDeck()
 const { deckStats, fetchDeckStats } = useStats()
 const { flashcardSets, loading: setsLoading, fetchFlashcardSets } = useFlashcardSets()
+
+const showAddCards = ref(false)
 
 const selectedSetId = computed(() => {
   const active = flashcardSets.value.find((s) => s.is_unlocked && !s.is_completed)
@@ -121,6 +125,27 @@ function studySet(setId: number) {
       >
         ⓘ Tap a set to continue studying
       </p>
+
+      <!-- Add Cards section -->
+      <div class="mt-8">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          @click="showAddCards = !showAddCards"
+        >
+          {{ showAddCards ? 'Hide' : 'Add Cards' }}
+        </BaseButton>
+
+        <div
+          v-if="showAddCards"
+          class="mt-4"
+        >
+          <DeckFlashcards
+            :deck-id="deckId"
+            mode="add"
+          />
+        </div>
+      </div>
     </template>
   </div>
 </template>
